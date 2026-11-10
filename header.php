@@ -498,7 +498,8 @@ if (!function_exists('ppb_nav_is_active')) {
 $is_profil = (!$is_home && (strpos($current_path, 'profil') === 0 || in_array($current_path, array('sejarah', 'visi-misi', 'struktur', 'dosen', 'roadmap', 'dokumen'))));
 $is_akademik = (!$is_home && (strpos($current_path, 'akademik') === 0 || in_array($current_path, array('kurikulum', 'panduan', 'jadwal-ujian', 'statistik', 'mis-pnbp', 'jurnal-bk'))));
 $is_kemahasiswaan = (!$is_home && (strpos($current_path, 'kemahasiswaan') === 0 || in_array($current_path, array('prestasi', 'karya', 'alumni'))));
-$is_layanan = (!$is_home && (strpos($current_path, 'layanan') === 0 || strpos($current_path, 'lab-bk') === 0 || strpos($current_path, 'survei') === 0 || strpos($current_path, 'perlindungan-mahasiswa') !== false || strpos($current_path, 'inventaris') !== false || strpos($current_path, 'e-library') !== false || strpos($current_path, 'elibrary') !== false));
+$is_elib_active = (!$is_home && (strpos($current_path, 'library') !== false || is_page('e-library') || is_page('elibrary') || (function_exists('is_page_template') && (is_page_template('page-elibrary.php') || is_page_template('page-e-library.php')))));
+$is_layanan = (!$is_home && (strpos($current_path, 'layanan') === 0 || strpos($current_path, 'lab-bk') === 0 || strpos($current_path, 'survei') === 0 || strpos($current_path, 'perlindungan-mahasiswa') !== false || strpos($current_path, 'inventaris') !== false || strpos($current_path, 'e-library') !== false || strpos($current_path, 'elibrary') !== false || $is_elib_active));
 $is_berita = (!$is_home && (strpos($current_path, 'berita') === 0 || is_singular('post') || is_category()));
 
 // Dropdown Menu Datasets (Fallback Bawaan)
@@ -623,16 +624,28 @@ if (has_nav_menu('primary-menu')) {
                 // Ensure E-Library seamlessly appears in dynamic menu under Layanan
                 if (stripos($parentItem['title'], 'Layanan') !== false || strpos($parentItem['url'], 'layanan') !== false) {
                     $has_elib = false;
-                    foreach ($parentItem['children'] as $child) {
-                        if (strpos($child['url'], 'e-library') !== false || strpos($child['url'], 'elibrary') !== false) $has_elib = true;
+                    foreach ($parentItem['children'] as &$child) {
+                        if (strpos($child['url'], 'e-library') !== false || strpos($child['url'], 'elibrary') !== false) {
+                            $has_elib = true;
+                            if ($is_elib_active) {
+                                $child['is_active'] = true;
+                                $parentItem['is_active'] = true;
+                            }
+                        }
                     }
+                    unset($child);
+
                     if (!$has_elib) {
                         $parentItem['children'][] = [
                             'id' => 9993,
                             'title' => 'E-Library & Modul',
                             'url' => home_url('/e-library/'),
-                            'is_active' => ppb_nav_is_active(home_url('/e-library/'), $current_path, $is_home),
+                            'is_active' => $is_elib_active,
                         ];
+                    }
+
+                    if ($is_elib_active) {
+                        $parentItem['is_active'] = true;
                     }
                 }
             }
@@ -779,7 +792,7 @@ if (empty($custom_nav_tree)) {
                     </button>
                     <div class="dropdown-menu absolute left-0 mt-0 w-64 bg-white rounded-2xl shadow-xl shadow-black/20 p-2 border border-gray-100 z-50 text-gray-800 animate-fadeIn" style="background:#ffffff !important;">
                         <?php foreach ($layanan_menu as $item) : 
-                            $is_item_active = ($current_path === $item['path']);
+                            $is_item_active = ($current_path === $item['path'] || ($item['path'] === 'e-library' && $is_elib_active));
                         ?>
                             <a href="<?php echo esc_url($item['url']); ?>" class="bk-dropdown-link <?php echo $is_item_active ? 'is-active' : ''; ?>" style="<?php echo $is_item_active ? 'display:flex;align-items:center;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:700;color:#0D3B22 !important;background-color:#E8F0EA !important;text-decoration:none;line-height:1.25;position:relative;' : 'display:flex;align-items:center;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:500;color:#374151 !important;background-color:transparent;text-decoration:none;line-height:1.25;position:relative;'; ?>">
                                 <span class="bk-dropdown-indicator" style="<?php echo $is_item_active ? 'width:4px;height:12px;border-radius:2px;margin-right:8px;display:inline-block;flex-shrink:0;background-color:#0D3B22 !important;' : 'width:4px;height:12px;border-radius:2px;margin-right:8px;display:inline-block;flex-shrink:0;background-color:transparent;'; ?>"></span>
@@ -912,7 +925,7 @@ if (empty($custom_nav_tree)) {
                     </button>
                     <div class="mobile-acc-content pl-4 pt-2 space-y-2 border-l-2 border-white/20 ml-2 mt-2">
                         <?php foreach ($layanan_menu as $item) : 
-                            $is_item_active = ($current_path === $item['path']);
+                            $is_item_active = ($current_path === $item['path'] || ($item['path'] === 'e-library' && $is_elib_active));
                         ?>
                             <a href="<?php echo esc_url($item['url']); ?>" class="block text-sm py-1 <?php echo $is_item_active ? 'text-[#F5B82E] font-bold' : 'text-white/70 hover:text-[#F5B82E]'; ?>" style="<?php echo $is_item_active ? 'color:#F5B82E !important; font-weight:700;' : 'color:rgba(255,255,255,0.8) !important;'; ?>">
                                 <?php echo esc_html($item['label']); ?>

@@ -115,9 +115,8 @@ $elibrary_items = array(
             </a>
 
             <!-- Badge -->
-            <div style="display:inline-flex;align-items:center;gap:7px;padding:4px 14px;border-radius:9999px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);color:#F5B82E;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px;">
-                <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#F5B82E;"></span>
-                <span>Perpustakaan Digital &amp; Repositori Belajar</span>
+            <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:9999px;background:#185333;color:#F5B82E;font-size:11.5px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:18px;">
+                <span style="font-size:14px">&#10070;</span> Layanan Terpadu &amp; Perpustakaan Digital
             </div>
 
             <!-- Title & Subtitle -->
@@ -155,6 +154,24 @@ $elibrary_items = array(
             </div>
         </div>
     </section>
+
+    <!-- =================================================================== -->
+    <!-- SUB-NAV STICKY PILLS (Layanan Terpadu & Laboratorium BK)            -->
+    <!-- =================================================================== -->
+    <div class="bk-subnav-sticky-wrap" style="position:relative;z-index:30;margin-top:-28px;padding:0 var(--bk-edge-pad, 1rem);margin-bottom:30px">
+        <div style="border:1px solid #D4E3D8;border-radius:18px;padding:6px 8px;max-width:100%;width:100%;margin:0 auto;background:#ffffff;box-shadow:0 4px 14px rgba(0,0,0,0.04);">
+            <ul class="no-scrollbar" style="display:flex;align-items:center;gap:6px;margin:0;padding:0;white-space:nowrap;overflow-x:auto;list-style:none;">
+                <li style="flex-shrink:0"><a href="<?php echo esc_url(home_url('/layanan/')); ?>" class="bk-subnav-item" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:12px;font-size:12px;font-family:'Poppins',sans-serif;text-decoration:none;background:transparent;color:#4B5563;font-weight:500;">Ringkasan</a></li>
+                <li style="flex-shrink:0"><a href="<?php echo esc_url(home_url('/e-library/')); ?>" class="bk-subnav-item bk-active" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:12px;font-size:12px;font-family:'Poppins',sans-serif;text-decoration:none;background:#0D3B22;color:#F5B82E;font-weight:700;">E-Library &amp; Modul</a></li>
+                <li style="flex-shrink:0"><a href="<?php echo esc_url(home_url('/layanan/akademik/')); ?>" class="bk-subnav-item" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:12px;font-size:12px;font-family:'Poppins',sans-serif;text-decoration:none;background:transparent;color:#4B5563;font-weight:500;">Panduan Prosedur &amp; Template</a></li>
+                <li style="flex-shrink:0"><a href="https://bk-connect-fipunm.vercel.app/sipadu" target="_blank" rel="noopener noreferrer" class="bk-subnav-item" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:12px;font-size:12px;font-family:'Poppins',sans-serif;text-decoration:none;background:transparent;color:#4B5563;font-weight:500;">SI-PADU BK</a></li>
+                <li style="flex-shrink:0"><a href="<?php echo esc_url(home_url('/lab-bk/inventaris/')); ?>" class="bk-subnav-item" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:12px;font-size:12px;font-family:'Poppins',sans-serif;text-decoration:none;background:transparent;color:#4B5563;font-weight:500;">Inventaris Alat Lab BK</a></li>
+                <li style="flex-shrink:0"><a href="<?php echo esc_url(home_url('/layanan/perlindungan-mahasiswa/')); ?>" class="bk-subnav-item" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:12px;font-size:12px;font-family:'Poppins',sans-serif;text-decoration:none;background:transparent;color:#4B5563;font-weight:500;">Perlindungan Mahasiswa</a></li>
+                <li style="flex-shrink:0"><a href="<?php echo esc_url(home_url('/survei/')); ?>" class="bk-subnav-item" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:12px;font-size:12px;font-family:'Poppins',sans-serif;text-decoration:none;background:transparent;color:#4B5563;font-weight:500;">Survei Kepuasan</a></li>
+                <li style="flex-shrink:0"><a href="<?php echo esc_url(home_url('/lab-bk/')); ?>" class="bk-subnav-item" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:12px;font-size:12px;font-family:'Poppins',sans-serif;text-decoration:none;background:transparent;color:#4B5563;font-weight:500;">Website Lab BK</a></li>
+            </ul>
+        </div>
+    </div>
 
     <!-- =================================================================== -->
     <!-- 2. FILTER PILLS & GRID KOLEKSI                                      -->
