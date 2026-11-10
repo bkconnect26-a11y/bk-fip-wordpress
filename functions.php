@@ -872,7 +872,7 @@ function ppb_auto_sync_pages_content() {
 
 
 
-    if ($synced_version === '11.0' && !$force) {
+    if ($synced_version === '12.0' && !$force) {
 
         return;
 
@@ -1280,7 +1280,7 @@ function ppb_auto_sync_pages_content() {
         }
     }
 
-    update_option('ppb_content_synced_version', '11.0');
+    update_option('ppb_content_synced_version', '12.0');
 
 
 
@@ -1430,6 +1430,57 @@ add_filter('template_include', function($template) {
                 $page_template = get_template_directory() . '/page.php';
                 if (file_exists($page_template)) {
                     return $page_template;
+                }
+            }
+        }
+
+        // 3. UNIVERSAL FALLBACK ROUTING FOR ALL PAGES IN pages-data.json
+        if ($wp_query->is_404) {
+            $json_file = get_template_directory() . '/pages-data.json';
+            if (file_exists($json_file)) {
+                $pages_data = json_decode(file_get_contents($json_file), true);
+                if (is_array($pages_data)) {
+                    $parts = explode('/', trim($path, '/'));
+                    $slug_target = end($parts);
+                    foreach ($pages_data as $p) {
+                        $full_slug = !empty($p['parent_slug']) ? $p['parent_slug'] . '/' . $p['slug'] : $p['slug'];
+                        if ($p['slug'] === $slug_target || $full_slug === $path) {
+                            global $wpdb, $post;
+                            $post_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE post_name = %s AND post_type = 'page' AND post_status != 'trash' LIMIT 1", $p['slug']));
+                            if (!$post_id) {
+                                $now = current_time('mysql');
+                                $wpdb->insert($wpdb->posts, array(
+                                    'post_title'     => $p['title'],
+                                    'post_name'      => $p['slug'],
+                                    'post_content'   => $p['content'],
+                                    'post_status'    => 'publish',
+                                    'post_type'      => 'page',
+                                    'comment_status' => 'closed',
+                                    'ping_status'    => 'closed',
+                                    'post_date'      => $now,
+                                    'post_date_gmt'  => current_time('mysql', 1),
+                                    'post_modified'  => $now,
+                                    'post_modified_gmt' => current_time('mysql', 1)
+                                ));
+                                $post_id = $wpdb->insert_id;
+                            }
+                            if ($post_id) {
+                                $post = get_post($post_id);
+                                $wp_query->posts = array($post);
+                                $wp_query->post_count = 1;
+                                $wp_query->is_404 = false;
+                                $wp_query->is_page = true;
+                                $wp_query->is_singular = true;
+                                $wp_query->queried_object = $post;
+                                $wp_query->queried_object_id = $post_id;
+                                status_header(200);
+                                $page_template = get_template_directory() . '/page.php';
+                                if (file_exists($page_template)) {
+                                    return $page_template;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

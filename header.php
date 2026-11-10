@@ -495,20 +495,28 @@ if (!function_exists('ppb_nav_is_active')) {
 }
 
 // Section Active Checks (for Fallback Menus)
-$is_profil = (!$is_home && (strpos($current_path, 'profil') === 0 || in_array($current_path, array('sejarah', 'visi-misi', 'struktur', 'dosen', 'roadmap', 'dokumen'))));
-$is_akademik = (!$is_home && (strpos($current_path, 'akademik') === 0 || in_array($current_path, array('kurikulum', 'panduan', 'jadwal-ujian', 'statistik', 'mis-pnbp', 'jurnal-bk'))));
-$is_kemahasiswaan = (!$is_home && (strpos($current_path, 'kemahasiswaan') === 0 || in_array($current_path, array('prestasi', 'karya', 'alumni'))));
+$is_profil = (!$is_home && (strpos($current_path, 'profil') === 0 || in_array($current_path, array('sejarah', 'visi-misi', 'visi-keilmuan', 'struktur', 'kerjasama-tridharma', 'dosen', 'buku-dosen', 'kepakaran-dosen', 'sarana-prasarana', 'roadmap', 'dokumen'))));
+$is_akademik = (!$is_home && (strpos($current_path, 'akademik') === 0 || in_array($current_path, array('kurikulum', 'rps-sap', 'panduan', 'jadwal-ujian', 'statistik', 'jurnal-bk'))));
+$is_kemahasiswaan = (!$is_home && (strpos($current_path, 'kemahasiswaan') === 0 || in_array($current_path, array('penerimaan', 'prestasi', 'mbkm-kemanusiaan', 'karya', 'alumni'))));
+$is_lab = (!$is_home && (strpos($current_path, 'lab') === 0 || in_array($current_path, array('laboratorium', 'lab-bk'))));
+$is_riset = (!$is_home && (strpos($current_path, 'mis-pnbp') === 0 || strpos($current_path, 'riset') === 0 || in_array($current_path, array('penelitian', 'pkm'))));
+$is_akreditasi = (!$is_home && (strpos($current_path, 'akreditasi') === 0 || strpos($current_path, 'kriteria') !== false || in_array($current_path, array('upm', 'penjaminan-mutu'))));
 $is_elib_active = (!$is_home && (strpos($current_path, 'library') !== false || is_page('e-library') || is_page('elibrary') || (function_exists('is_page_template') && (is_page_template('page-elibrary.php') || is_page_template('page-e-library.php')))));
-$is_layanan = (!$is_home && (strpos($current_path, 'layanan') === 0 || strpos($current_path, 'lab-bk') === 0 || strpos($current_path, 'survei') === 0 || strpos($current_path, 'perlindungan-mahasiswa') !== false || strpos($current_path, 'inventaris') !== false || strpos($current_path, 'e-library') !== false || strpos($current_path, 'elibrary') !== false || $is_elib_active));
+$is_layanan = (!$is_home && (strpos($current_path, 'layanan') === 0 || strpos($current_path, 'survei') === 0 || strpos($current_path, 'persuratan') !== false || strpos($current_path, 'perlindungan-mahasiswa') !== false || strpos($current_path, 'e-library') !== false || strpos($current_path, 'elibrary') !== false || $is_elib_active));
 $is_berita = (!$is_home && (strpos($current_path, 'berita') === 0 || is_singular('post') || is_category()));
 
 // Dropdown Menu Datasets (Fallback Bawaan)
 $profil_menu = array(
-    array('url' => home_url('/profil/'), 'path' => 'profil', 'label' => 'Ringkasan'),
+    array('url' => home_url('/profil/'), 'path' => 'profil', 'label' => 'Ringkasan Profil'),
     array('url' => home_url('/profil/sejarah/'), 'path' => 'profil/sejarah', 'label' => 'Sejarah Program Studi'),
     array('url' => home_url('/profil/visi-misi/'), 'path' => 'profil/visi-misi', 'label' => 'Visi, Misi & Sasaran'),
+    array('url' => home_url('/profil/visi-keilmuan/'), 'path' => 'profil/visi-keilmuan', 'label' => 'Visi Keilmuan & Bagan Kepakaran'),
     array('url' => home_url('/profil/struktur/'), 'path' => 'profil/struktur', 'label' => 'Struktur Organisasi'),
+    array('url' => home_url('/profil/kerjasama-tridharma/'), 'path' => 'profil/kerjasama-tridharma', 'label' => 'Kerjasama Tridharma (Pendidikan/Riset/PkM)'),
     array('url' => home_url('/profil/dosen/'), 'path' => 'profil/dosen', 'label' => 'Dosen & Staf Pengajar'),
+    array('url' => home_url('/profil/buku-dosen/'), 'path' => 'profil/buku-dosen', 'label' => 'Koleksi Buku Dosen BK'),
+    array('url' => home_url('/profil/kepakaran-dosen/'), 'path' => 'profil/kepakaran-dosen', 'label' => 'Peta Kepakaran, SINTA & HKI'),
+    array('url' => home_url('/profil/sarana-prasarana/'), 'path' => 'profil/sarana-prasarana', 'label' => 'Sarana & Prasarana (Ruang Kelas/Lab/Konseling)'),
     array('url' => home_url('/profil/roadmap/'), 'path' => 'profil/roadmap', 'label' => 'Roadmap Riset & PKM'),
     array('url' => home_url('/profil/dokumen/'), 'path' => 'profil/dokumen', 'label' => 'Dokumen Mutu & Regulasi'),
 );
@@ -516,29 +524,52 @@ $profil_menu = array(
 $akademik_menu = array(
     array('url' => home_url('/akademik/'), 'path' => 'akademik', 'label' => 'Ringkasan Akademik'),
     array('url' => home_url('/akademik/kurikulum/'), 'path' => 'akademik/kurikulum', 'label' => 'Kurikulum OBE 2025'),
+    array('url' => home_url('/akademik/rps-sap/'), 'path' => 'akademik/rps-sap', 'label' => 'RPS Lengkap, SAP & Rubrik OBE'),
     array('url' => home_url('/akademik/panduan/'), 'path' => 'akademik/panduan', 'label' => 'Pedoman Akademik & Penilaian'),
     array('url' => home_url('/akademik/jadwal-ujian/'), 'path' => 'akademik/jadwal-ujian', 'label' => 'Jadwal Perkuliahan & Ujian'),
     array('url' => home_url('/akademik/statistik/'), 'path' => 'akademik/statistik', 'label' => 'Data & Statistik Akademik'),
-    array('url' => home_url('/mis-pnbp/'), 'path' => 'mis-pnbp', 'label' => 'MIS PNBP (Riset & PkM)'),
-    array('url' => home_url('/jurnal-bk/'), 'path' => 'jurnal-bk', 'label' => 'Jurnal Ilmiah Prodi BK'),
+    array('url' => home_url('/jurnal-bk/'), 'path' => 'jurnal-bk', 'label' => 'Jurnal & Pengabdian Prodi BK'),
 );
 
 $kemahasiswaan_menu = array(
     array('url' => home_url('/kemahasiswaan/'), 'path' => 'kemahasiswaan', 'label' => 'Ringkasan Kemahasiswaan'),
-    array('url' => home_url('/kemahasiswaan/prestasi/'), 'path' => 'kemahasiswaan/prestasi', 'label' => 'Prestasi Mahasiswa'),
+    array('url' => home_url('/kemahasiswaan/penerimaan/'), 'path' => 'kemahasiswaan/penerimaan', 'label' => 'Penerimaan Maba (Peminat & Daya Tampung)'),
+    array('url' => home_url('/kemahasiswaan/prestasi/'), 'path' => 'kemahasiswaan/prestasi', 'label' => 'Prestasi & Riset Non-Akademik'),
+    array('url' => home_url('/kemahasiswaan/mbkm-kemanusiaan/'), 'path' => 'kemahasiswaan/mbkm-kemanusiaan', 'label' => 'Pameran Layanan MBKM & Proyek Kemanusiaan'),
     array('url' => home_url('/kemahasiswaan/karya/'), 'path' => 'kemahasiswaan/karya', 'label' => 'Karya & Inovasi Mahasiswa'),
     array('url' => home_url('/kemahasiswaan/alumni/'), 'path' => 'kemahasiswaan/alumni', 'label' => 'Direktori Alumni & Tracer Study'),
     array('url' => home_url('/kemahasiswaan/statistik/'), 'path' => 'kemahasiswaan/statistik', 'label' => 'Data & Statistik Mahasiswa'),
 );
 
+$lab_menu = array(
+    array('url' => home_url('/laboratorium/'), 'path' => 'laboratorium', 'label' => 'Ringkasan Laboratorium BK'),
+    array('url' => home_url('/laboratorium/kegiatan/'), 'path' => 'laboratorium/kegiatan', 'label' => 'Kegiatan Mahasiswa Lab BK'),
+    array('url' => home_url('/laboratorium/lomba/'), 'path' => 'laboratorium/lomba', 'label' => 'Lomba Non-Akademik Lab'),
+    array('url' => home_url('/lab-bk/inventaris/'), 'path' => 'lab-bk/inventaris', 'label' => 'Inventaris Alat Tes Lab BK'),
+    array('url' => 'https://bk-connect-fipunm.vercel.app/', 'path' => 'bk-connect', 'label' => 'Portal BK Connect Suite &rarr;'),
+    array('url' => 'https://peersupport-bk.unm.ac.id/', 'path' => 'peersupport', 'label' => 'Portal Peersupport BK &rarr;'),
+);
+
+$riset_menu = array(
+    array('url' => home_url('/mis-pnbp/'), 'path' => 'mis-pnbp', 'label' => 'Pusat MIS PNBP'),
+    array('url' => home_url('/mis-pnbp/penelitian/'), 'path' => 'mis-pnbp/penelitian', 'label' => 'Hibah Penelitian PNBP'),
+    array('url' => home_url('/mis-pnbp/pkm/'), 'path' => 'mis-pnbp/pkm', 'label' => 'Pengabdian kepada Masyarakat (PkM) PNBP'),
+    array('url' => home_url('/jurnal-bk/'), 'path' => 'jurnal-bk', 'label' => 'Publikasi Jurnal & Desiminasi Riset'),
+);
+
 $layanan_menu = array(
     array('url' => home_url('/layanan/'), 'path' => 'layanan', 'label' => 'Ringkasan Layanan'),
+    array('url' => home_url('/layanan/persuratan/'), 'path' => 'layanan/persuratan', 'label' => 'Layanan Persuratan & Kode Nomor Surat'),
     array('url' => home_url('/e-library/'), 'path' => 'e-library', 'label' => 'E-Library & Modul'),
     array('url' => home_url('/layanan/akademik/'), 'path' => 'layanan/akademik', 'label' => 'Panduan Prosedur & Template'),
     array('url' => home_url('/layanan/perlindungan-mahasiswa/'), 'path' => 'layanan/perlindungan-mahasiswa', 'label' => 'Perlindungan Mahasiswa (No. 13)'),
-    array('url' => home_url('/lab-bk/inventaris/'), 'path' => 'lab-bk/inventaris', 'label' => 'Inventaris Laboratorium BK'),
-    array('url' => home_url('/lab-bk/'), 'path' => 'lab-bk', 'label' => 'Website Lab BK'),
     array('url' => home_url('/survei/'), 'path' => 'survei', 'label' => 'Survei Kepuasan'),
+);
+
+$akreditasi_menu = array(
+    array('url' => home_url('/akreditasi/'), 'path' => 'akreditasi', 'label' => 'Instrumen Hub 9 Kriteria LAMDIK'),
+    array('url' => home_url('/akreditasi/sertifikat/'), 'path' => 'akreditasi/sertifikat', 'label' => 'Sertifikat Akreditasi S1, S2, S3'),
+    array('url' => home_url('/akreditasi/upm/'), 'path' => 'akreditasi/upm', 'label' => 'Renstra, Renop & Penjaminan Mutu (UPM)'),
 );
 
 // DUKUNGAN MENU DINAMIS WORDPRESS (Appearance > Menus)
@@ -784,6 +815,42 @@ if (empty($custom_nav_tree)) {
                     </div>
                 </div>
 
+                <!-- Dropdown: Laboratorium (Baru) -->
+                <div class="relative group dropdown-container">
+                    <button type="button" class="bk-nav-btn dropdown-trigger flex items-center gap-1 rounded-full <?php echo $is_lab ? 'is-active-dropdown' : ''; ?>">
+                        <span>Laboratorium</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-180" style="<?php echo $is_lab ? 'color:#F5B82E;' : 'color:inherit;'; ?>"></i>
+                    </button>
+                    <div class="dropdown-menu absolute left-0 mt-0 w-64 bg-white rounded-2xl shadow-xl shadow-black/20 p-2 border border-gray-100 z-50 text-gray-800 animate-fadeIn" style="background:#ffffff !important;">
+                        <?php foreach ($lab_menu as $item) : 
+                            $is_item_active = ($current_path === $item['path']);
+                        ?>
+                            <a href="<?php echo esc_url($item['url']); ?>" class="bk-dropdown-link <?php echo $is_item_active ? 'is-active' : ''; ?>" style="<?php echo $is_item_active ? 'display:flex;align-items:center;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:700;color:#0D3B22 !important;background-color:#E8F0EA !important;text-decoration:none;line-height:1.25;position:relative;' : 'display:flex;align-items:center;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:500;color:#374151 !important;background-color:transparent;text-decoration:none;line-height:1.25;position:relative;'; ?>">
+                                <span class="bk-dropdown-indicator" style="<?php echo $is_item_active ? 'width:4px;height:12px;border-radius:2px;margin-right:8px;display:inline-block;flex-shrink:0;background-color:#0D3B22 !important;' : 'width:4px;height:12px;border-radius:2px;margin-right:8px;display:inline-block;flex-shrink:0;background-color:transparent;'; ?>"></span>
+                                <span class="bk-dropdown-label" style="color:inherit;"><?php echo esc_html($item['label']); ?></span>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <!-- Dropdown: Riset & PkM (MIS PNBP) (Baru) -->
+                <div class="relative group dropdown-container">
+                    <button type="button" class="bk-nav-btn dropdown-trigger flex items-center gap-1 rounded-full <?php echo $is_riset ? 'is-active-dropdown' : ''; ?>">
+                        <span>Riset &amp; PkM</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-180" style="<?php echo $is_riset ? 'color:#F5B82E;' : 'color:inherit;'; ?>"></i>
+                    </button>
+                    <div class="dropdown-menu absolute left-0 mt-0 w-64 bg-white rounded-2xl shadow-xl shadow-black/20 p-2 border border-gray-100 z-50 text-gray-800 animate-fadeIn" style="background:#ffffff !important;">
+                        <?php foreach ($riset_menu as $item) : 
+                            $is_item_active = ($current_path === $item['path']);
+                        ?>
+                            <a href="<?php echo esc_url($item['url']); ?>" class="bk-dropdown-link <?php echo $is_item_active ? 'is-active' : ''; ?>" style="<?php echo $is_item_active ? 'display:flex;align-items:center;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:700;color:#0D3B22 !important;background-color:#E8F0EA !important;text-decoration:none;line-height:1.25;position:relative;' : 'display:flex;align-items:center;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:500;color:#374151 !important;background-color:transparent;text-decoration:none;line-height:1.25;position:relative;'; ?>">
+                                <span class="bk-dropdown-indicator" style="<?php echo $is_item_active ? 'width:4px;height:12px;border-radius:2px;margin-right:8px;display:inline-block;flex-shrink:0;background-color:#0D3B22 !important;' : 'width:4px;height:12px;border-radius:2px;margin-right:8px;display:inline-block;flex-shrink:0;background-color:transparent;'; ?>"></span>
+                                <span class="bk-dropdown-label" style="color:inherit;"><?php echo esc_html($item['label']); ?></span>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
                 <!-- Dropdown: Layanan -->
                 <div class="relative group dropdown-container">
                     <button type="button" class="bk-nav-btn dropdown-trigger flex items-center gap-1 rounded-full <?php echo $is_layanan ? 'is-active-dropdown' : ''; ?>">
@@ -802,9 +869,27 @@ if (empty($custom_nav_tree)) {
                     </div>
                 </div>
 
+                <!-- Dropdown: Akreditasi 9 Kriteria (Baru) -->
+                <div class="relative group dropdown-container">
+                    <button type="button" class="bk-nav-btn dropdown-trigger flex items-center gap-1 rounded-full <?php echo $is_akreditasi ? 'is-active-dropdown' : ''; ?>" style="<?php echo $is_akreditasi ? 'background:rgba(245,184,46,0.2);color:#F5B82E;' : ''; ?>">
+                        <span style="font-weight:700;color:#F5B82E;">Akreditasi</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-180" style="color:#F5B82E;"></i>
+                    </button>
+                    <div class="dropdown-menu absolute right-0 mt-0 w-64 bg-white rounded-2xl shadow-xl shadow-black/20 p-2 border border-gray-100 z-50 text-gray-800 animate-fadeIn" style="background:#ffffff !important;">
+                        <?php foreach ($akreditasi_menu as $item) : 
+                            $is_item_active = ($current_path === $item['path']);
+                        ?>
+                            <a href="<?php echo esc_url($item['url']); ?>" class="bk-dropdown-link <?php echo $is_item_active ? 'is-active' : ''; ?>" style="<?php echo $is_item_active ? 'display:flex;align-items:center;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:700;color:#0D3B22 !important;background-color:#E8F0EA !important;text-decoration:none;line-height:1.25;position:relative;' : 'display:flex;align-items:center;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:500;color:#374151 !important;background-color:transparent;text-decoration:none;line-height:1.25;position:relative;'; ?>">
+                                <span class="bk-dropdown-indicator" style="<?php echo $is_item_active ? 'width:4px;height:12px;border-radius:2px;margin-right:8px;display:inline-block;flex-shrink:0;background-color:#0D3B22 !important;' : 'width:4px;height:12px;border-radius:2px;margin-right:8px;display:inline-block;flex-shrink:0;background-color:transparent;'; ?>"></span>
+                                <span class="bk-dropdown-label" style="color:inherit;"><?php echo esc_html($item['label']); ?></span>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
                 <!-- Berita & Pengumuman -->
                 <a href="<?php echo esc_url(home_url('/berita/')); ?>" class="bk-nav-btn <?php echo $is_berita ? 'is-active-btn' : ''; ?>">
-                    Berita &amp; Pengumuman
+                    Berita
                 </a>
 
             <?php endif; ?>
@@ -917,6 +1002,40 @@ if (empty($custom_nav_tree)) {
                     </div>
                 </div>
 
+                <!-- Mobile Accordion: Laboratorium (Baru) -->
+                <div class="py-2 border-b border-white/10">
+                    <button type="button" onclick="bkToggleAccordion(this)" class="mobile-acc-btn w-full flex items-center justify-between text-sm font-semibold py-2 px-1 rounded-lg <?php echo $is_lab ? 'text-[#F5B82E]' : 'text-white/90 hover:text-[#F5B82E]'; ?>" style="cursor:pointer;background:transparent;border:none;">
+                        <span>Laboratorium</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;color:#F5B82E;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div class="mobile-acc-content pl-4 pt-2 space-y-2 border-l-2 border-white/20 ml-2 mt-2">
+                        <?php foreach ($lab_menu as $item) : 
+                            $is_item_active = ($current_path === $item['path']);
+                        ?>
+                            <a href="<?php echo esc_url($item['url']); ?>" class="block text-sm py-1 <?php echo $is_item_active ? 'text-[#F5B82E] font-bold' : 'text-white/70 hover:text-[#F5B82E]'; ?>" style="<?php echo $is_item_active ? 'color:#F5B82E !important; font-weight:700;' : 'color:rgba(255,255,255,0.8) !important;'; ?>">
+                                <?php echo esc_html($item['label']); ?>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <!-- Mobile Accordion: Riset & PkM (MIS PNBP) (Baru) -->
+                <div class="py-2 border-b border-white/10">
+                    <button type="button" onclick="bkToggleAccordion(this)" class="mobile-acc-btn w-full flex items-center justify-between text-sm font-semibold py-2 px-1 rounded-lg <?php echo $is_riset ? 'text-[#F5B82E]' : 'text-white/90 hover:text-[#F5B82E]'; ?>" style="cursor:pointer;background:transparent;border:none;">
+                        <span>Riset &amp; PkM (MIS PNBP)</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;color:#F5B82E;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div class="mobile-acc-content pl-4 pt-2 space-y-2 border-l-2 border-white/20 ml-2 mt-2">
+                        <?php foreach ($riset_menu as $item) : 
+                            $is_item_active = ($current_path === $item['path']);
+                        ?>
+                            <a href="<?php echo esc_url($item['url']); ?>" class="block text-sm py-1 <?php echo $is_item_active ? 'text-[#F5B82E] font-bold' : 'text-white/70 hover:text-[#F5B82E]'; ?>" style="<?php echo $is_item_active ? 'color:#F5B82E !important; font-weight:700;' : 'color:rgba(255,255,255,0.8) !important;'; ?>">
+                                <?php echo esc_html($item['label']); ?>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
                 <!-- Mobile Accordion: Layanan -->
                 <div class="py-2 border-b border-white/10">
                     <button type="button" onclick="bkToggleAccordion(this)" class="mobile-acc-btn w-full flex items-center justify-between text-sm font-semibold py-2 px-1 rounded-lg <?php echo $is_layanan ? 'text-[#F5B82E]' : 'text-white/90 hover:text-[#F5B82E]'; ?>" style="cursor:pointer;background:transparent;border:none;">
@@ -926,6 +1045,23 @@ if (empty($custom_nav_tree)) {
                     <div class="mobile-acc-content pl-4 pt-2 space-y-2 border-l-2 border-white/20 ml-2 mt-2">
                         <?php foreach ($layanan_menu as $item) : 
                             $is_item_active = ($current_path === $item['path'] || ($item['path'] === 'e-library' && $is_elib_active));
+                        ?>
+                            <a href="<?php echo esc_url($item['url']); ?>" class="block text-sm py-1 <?php echo $is_item_active ? 'text-[#F5B82E] font-bold' : 'text-white/70 hover:text-[#F5B82E]'; ?>" style="<?php echo $is_item_active ? 'color:#F5B82E !important; font-weight:700;' : 'color:rgba(255,255,255,0.8) !important;'; ?>">
+                                <?php echo esc_html($item['label']); ?>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <!-- Mobile Accordion: Akreditasi 9 Kriteria (Baru) -->
+                <div class="py-2 border-b border-white/10">
+                    <button type="button" onclick="bkToggleAccordion(this)" class="mobile-acc-btn w-full flex items-center justify-between text-sm font-semibold py-2 px-1 rounded-lg <?php echo $is_akreditasi ? 'text-[#F5B82E]' : 'text-[#F5B82E]/90 hover:text-[#F5B82E]'; ?>" style="cursor:pointer;background:transparent;border:none;">
+                        <span style="font-weight:700;color:#F5B82E;">Akreditasi 9 Kriteria</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;color:#F5B82E;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div class="mobile-acc-content pl-4 pt-2 space-y-2 border-l-2 border-white/20 ml-2 mt-2">
+                        <?php foreach ($akreditasi_menu as $item) : 
+                            $is_item_active = ($current_path === $item['path']);
                         ?>
                             <a href="<?php echo esc_url($item['url']); ?>" class="block text-sm py-1 <?php echo $is_item_active ? 'text-[#F5B82E] font-bold' : 'text-white/70 hover:text-[#F5B82E]'; ?>" style="<?php echo $is_item_active ? 'color:#F5B82E !important; font-weight:700;' : 'color:rgba(255,255,255,0.8) !important;'; ?>">
                                 <?php echo esc_html($item['label']); ?>
