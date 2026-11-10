@@ -10,6 +10,126 @@
 
 if (!defined('ABSPATH')) exit;
 
+/**
+ * --------------------------------------------------------------------------
+ * WP-STAGING DEV ENVIRONMENT HANDLER (/yamato)
+ * --------------------------------------------------------------------------
+ * Ensures all generated URLs (home_url, site_url, page content links)
+ * retain the '/yamato' prefix when running on staging so links never leak
+ * to the production main domain (bk-fip.unm.ac.id/).
+ */
+if (!function_exists('ppb_is_yamato_staging')) {
+    function ppb_is_yamato_staging() {
+        static $is_staging = null;
+        if ($is_staging !== null) return $is_staging;
+
+        $host   = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+        $req    = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+        $script = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '';
+
+        // Check if explicitly on /yamato path, staging directory, or staging clone
+        if (
+            strpos($req, '/yamato') !== false ||
+            strpos($script, '/yamato') !== false ||
+            strpos(__DIR__, 'yamato') !== false ||
+            (defined('WPSTG_DEV') && WPSTG_DEV) ||
+            defined('WPSTAGING_VERSION') ||
+            (defined('WP_ENVIRONMENT_TYPE') && WP_ENVIRONMENT_TYPE === 'staging') ||
+            (strpos($host, 'bk-fip.unm.ac.id') !== false && (strpos($req, '/yamato') === 0 || strpos($script, '/yamato') === 0 || strpos(__FILE__, 'yamato') !== false))
+        ) {
+            $is_staging = true;
+        } else {
+            // Also if host is bk-fip.unm.ac.id and home_url has yamato
+            $is_staging = (strpos(get_option('home', ''), '/yamato') !== false || strpos(get_option('siteurl', ''), '/yamato') !== false);
+        }
+        return $is_staging;
+    }
+}
+
+if (!function_exists('ppb_filter_yamato_url')) {
+    function ppb_filter_yamato_url($url) {
+        if (empty($url) || !ppb_is_yamato_staging()) {
+            return $url;
+        }
+
+        // External protocols, anchors, mailto, tel, javascript
+        if (strpos($url, '#') === 0 || strpos($url, 'mailto:') === 0 || strpos($url, 'tel:') === 0 || strpos($url, 'javascript:') === 0) {
+            return $url;
+        }
+
+        // Protocol-relative external URLs
+        if (strpos($url, '//') === 0 && strpos($url, '//bk-fip.unm.ac.id') === false) {
+            return $url;
+        }
+
+        $parsed = parse_url($url);
+        $host = isset($parsed['host']) ? $parsed['host'] : '';
+
+        // Root-relative URL starting with /
+        if (empty($host) && strpos($url, '/') === 0) {
+            if (strpos($url, '/yamato/') === 0 || $url === '/yamato') {
+                return $url;
+            }
+            return '/yamato' . $url;
+        }
+
+        // Full URL with domain
+        $current_host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'bk-fip.unm.ac.id';
+        if ($host === 'bk-fip.unm.ac.id' || $host === $current_host || empty($host)) {
+            $path = isset($parsed['path']) ? $parsed['path'] : '/';
+            if (strpos($path, '/yamato/') === 0 || $path === '/yamato') {
+                return $url;
+            }
+            $new_path = '/yamato' . ('/' . ltrim($path, '/'));
+            $scheme = isset($parsed['scheme']) ? $parsed['scheme'] . '://' : '//';
+            $port = isset($parsed['port']) ? ':' . $parsed['port'] : '';
+            $query = isset($parsed['query']) ? '?' . $parsed['query'] : '';
+            $fragment = isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '';
+            return $scheme . $host . $port . $new_path . $query . $fragment;
+        }
+
+        return $url;
+    }
+}
+
+// Attach filters to WordPress core URL functions
+add_filter('home_url', function($url, $path = '', $orig_scheme = null, $blog_id = null) {
+    return ppb_filter_yamato_url($url);
+}, 99, 4);
+
+add_filter('site_url', function($url, $path = '', $scheme = null, $blog_id = null) {
+    return ppb_filter_yamato_url($url);
+}, 99, 4);
+
+add_filter('the_content', function($content) {
+    if (empty($content) || !ppb_is_yamato_staging()) {
+        return $content;
+    }
+
+    // 1. Rewrite root-relative links: href="/path" -> href="/yamato/path"
+    $content = preg_replace_callback('/href=(["\'])(\/[^"\']*)\1/i', function($matches) {
+        $quote = $matches[1];
+        $href = $matches[2];
+        if (strpos($href, '//') === 0 || strpos($href, '/yamato/') === 0 || $href === '/yamato') {
+            return 'href=' . $quote . $href . $quote;
+        }
+        return 'href=' . $quote . '/yamato' . $href . $quote;
+    }, $content);
+
+    // 2. Rewrite full domain links: href="https://bk-fip.unm.ac.id/path" -> href="https://bk-fip.unm.ac.id/yamato/path"
+    $content = preg_replace_callback('/href=(["\'])(https?:\/\/bk-fip\.unm\.ac\.id)(\/[^"\']*)\1/i', function($matches) {
+        $quote = $matches[1];
+        $domain = $matches[2];
+        $path = $matches[3];
+        if (strpos($path, '/yamato/') === 0 || $path === '/yamato') {
+            return 'href=' . $quote . $domain . $path . $quote;
+        }
+        return 'href=' . $quote . $domain . '/yamato' . $path . $quote;
+    }, $content);
+
+    return $content;
+}, 99);
+
 // Force theme's own header and footer over any lingering Elementor Header Footer Builder templates
 add_filter('enable_hfe_render_header', '__return_false', 99999);
 add_filter('enable_hfe_render_footer', '__return_false', 99999);
@@ -872,7 +992,7 @@ function ppb_auto_sync_pages_content() {
 
 
 
-    if ($synced_version === '12.0' && !$force) {
+    if ($synced_version === '13.0' && !$force) {
 
         return;
 
@@ -1280,7 +1400,7 @@ function ppb_auto_sync_pages_content() {
         }
     }
 
-    update_option('ppb_content_synced_version', '12.0');
+    update_option('ppb_content_synced_version', '13.0');
 
 
 
@@ -1306,7 +1426,17 @@ add_action('after_switch_theme', 'ppb_auto_sync_pages_content');
 // Bulletproof URL routing: ensure /profil/dosen/{slug}, /profil/dosen/, and /dosen/ always resolve smoothly
 add_filter('template_include', function($template) {
     if (!is_admin()) {
-                // Bulletproof Berita Page Routing
+        $req_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+        $path = trim(parse_url($req_uri, PHP_URL_PATH), '/');
+
+        // Normalize WP-Staging /yamato subfolder prefix
+        if (strpos($path, 'yamato/') === 0) {
+            $path = substr($path, 7);
+        } elseif ($path === 'yamato') {
+            $path = '';
+        }
+
+        // Bulletproof Berita Page Routing
         if (is_page('berita') || $path === 'berita' || (!is_front_page() && is_home())) {
             $berita_tpl = get_template_directory() . '/page-berita.php';
             if (file_exists($berita_tpl)) {
@@ -1314,14 +1444,12 @@ add_filter('template_include', function($template) {
             }
         }
 
-        if (is_front_page()) {
+        if (is_front_page() || empty($path)) {
             $front_tpl = get_template_directory() . '/front-page.php';
             if (file_exists($front_tpl)) {
                 return $front_tpl;
             }
         }
-        $req_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
-        $path = trim(parse_url($req_uri, PHP_URL_PATH), '/');
 
         // 1. SINGLE DOSEN PROFILE ROUTING
         $dosen_slug = '';

@@ -456,6 +456,12 @@ $home_path = parse_url(home_url(), PHP_URL_PATH) ?? '';
 if (!empty($home_path) && strpos($req_path, $home_path) === 0) {
     $req_path = substr($req_path, strlen($home_path));
 }
+// Normalize WP-Staging /yamato subfolder prefix
+if (strpos($req_path, '/yamato/') === 0) {
+    $req_path = substr($req_path, 7);
+} elseif ($req_path === '/yamato') {
+    $req_path = '/';
+}
 $current_path = trim($req_path, '/');
 
 // Is Front Page
@@ -476,6 +482,11 @@ if (!function_exists('ppb_nav_is_active')) {
         $home_path = parse_url(home_url(), PHP_URL_PATH) ?? '';
         if (!empty($home_path) && strpos($m_path, $home_path) === 0) {
             $m_path = substr($m_path, strlen($home_path));
+        }
+        if (strpos($m_path, '/yamato/') === 0) {
+            $m_path = substr($m_path, 7);
+        } elseif ($m_path === '/yamato') {
+            $m_path = '/';
         }
         $m_path = trim($m_path, '/');
 
