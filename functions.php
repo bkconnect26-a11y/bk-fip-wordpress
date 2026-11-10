@@ -208,6 +208,9 @@ add_action('init', function() {
 
     // Auto-create staging .htaccess in multiple potential paths
     $potential_paths = array();
+    $wp_root = dirname(dirname(dirname(__DIR__)));
+    $potential_paths[] = $wp_root . '/.htaccess';
+    $potential_paths[] = $wp_root . '/yamato/.htaccess';
     if (defined('ABSPATH')) {
         $potential_paths[] = rtrim(ABSPATH, '/') . '/.htaccess';
         $potential_paths[] = rtrim(ABSPATH, '/') . '/yamato/.htaccess';
@@ -227,11 +230,16 @@ add_action('init', function() {
              "</IfModule>\n" .
              "# END WordPress Staging /yamato\n";
 
+    $written_any = false;
     foreach ($potential_paths as $p) {
         $dir = dirname($p);
         if (is_dir($dir) && is_writable($dir)) {
             if (!file_exists($p) || strpos(@file_get_contents($p), 'RewriteBase /yamato/') === false) {
-                @file_put_contents($p, $rules);
+                if (@file_put_contents($p, $rules) !== false) {
+                    $written_any = true;
+                }
+            } else {
+                $written_any = true;
             }
         }
     }
@@ -241,10 +249,46 @@ add_action('init', function() {
         global $wp_rewrite;
         if ($wp_rewrite) {
             $wp_rewrite->set_permalink_structure('/%postname%/');
-            $wp_rewrite->flush_rules(false);
+            $wp_rewrite->flush_rules(true);
         }
     }
 }, 1);
+
+// Admin 1-Click Fixer Handler for Staging /yamato
+add_action('admin_init', function() {
+    if (isset($_GET['fix_yamato_htaccess']) && current_user_can('manage_options')) {
+        $rules = "# BEGIN WordPress Staging /yamato\n" .
+                 "<IfModule mod_rewrite.c>\n" .
+                 "RewriteEngine On\n" .
+                 "RewriteBase /yamato/\n" .
+                 "RewriteRule ^index\\.php$ - [L]\n" .
+                 "RewriteCond %{REQUEST_FILENAME} !-f\n" .
+                 "RewriteCond %{REQUEST_FILENAME} !-d\n" .
+                 "RewriteRule . /yamato/index.php [L]\n" .
+                 "</IfModule>\n" .
+                 "# END WordPress Staging /yamato\n";
+        $wp_root = dirname(dirname(dirname(__DIR__)));
+        $paths = [
+            $wp_root . '/.htaccess',
+            $wp_root . '/yamato/.htaccess',
+            (defined('ABSPATH') ? rtrim(ABSPATH, '/') . '/.htaccess' : ''),
+            (defined('ABSPATH') ? rtrim(ABSPATH, '/') . '/yamato/.htaccess' : ''),
+            (isset($_SERVER['DOCUMENT_ROOT']) ? rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/yamato/.htaccess' : '')
+        ];
+        $success = false;
+        foreach ($paths as $p) {
+            if (!empty($p) && is_dir(dirname($p)) && is_writable(dirname($p))) {
+                if (@file_put_contents($p, $rules) !== false) {
+                    $success = true;
+                }
+            }
+        }
+        update_option('permalink_structure', '/%postname%/');
+        flush_rewrite_rules(true);
+        wp_safe_redirect(admin_url('options-permalink.php?yamato_fixed=' . ($success ? '1' : '0')));
+        exit;
+    }
+});
 
 // Auto-patch and intercept links in WP-Admin as well
 add_action('admin_footer', function() {
