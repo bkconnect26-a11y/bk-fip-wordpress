@@ -35,9 +35,7 @@ if (!function_exists('ppb_is_yamato_staging')) {
             strpos(__DIR__, 'yamato') !== false ||
             (defined('WPSTG_DEV') && WPSTG_DEV) ||
             defined('WPSTAGING_VERSION') ||
-            (defined('WP_ENVIRONMENT_TYPE') && WP_ENVIRONMENT_TYPE === 'staging') ||
-            strpos(get_option('home', ''), '/yamato') !== false ||
-            strpos(get_option('siteurl', ''), '/yamato') !== false
+            (defined('WP_ENVIRONMENT_TYPE') && WP_ENVIRONMENT_TYPE === 'staging')
         ) {
             $is_staging = true;
         } else {
@@ -93,7 +91,22 @@ if (!function_exists('ppb_filter_yamato_url')) {
     }
 }
 
-// Attach filters to WordPress core URL functions
+// 1. Force home and siteurl options to include /yamato on staging
+add_filter('pre_option_home', function($val) {
+    if (ppb_is_yamato_staging()) {
+        return 'https://bk-fip.unm.ac.id/yamato';
+    }
+    return $val;
+}, 99);
+
+add_filter('pre_option_siteurl', function($val) {
+    if (ppb_is_yamato_staging()) {
+        return 'https://bk-fip.unm.ac.id/yamato';
+    }
+    return $val;
+}, 99);
+
+// 2. Attach filters to WordPress core URL functions
 add_filter('home_url', function($url, $path = '', $orig_scheme = null, $blog_id = null) {
     return ppb_filter_yamato_url($url);
 }, 99, 4);
@@ -101,6 +114,14 @@ add_filter('home_url', function($url, $path = '', $orig_scheme = null, $blog_id 
 add_filter('site_url', function($url, $path = '', $scheme = null, $blog_id = null) {
     return ppb_filter_yamato_url($url);
 }, 99, 4);
+
+// 3. Prevent wp_redirect from escaping /yamato
+add_filter('wp_redirect', function($location, $status = 302) {
+    if (ppb_is_yamato_staging()) {
+        return ppb_filter_yamato_url($location);
+    }
+    return $location;
+}, 99, 2);
 
 // Filter custom navigation menus from WP Admin (Appearance > Menus)
 add_filter('wp_get_nav_menu_items', function($items) {
@@ -163,6 +184,97 @@ add_filter('the_content', function($content) {
 
     return $content;
 }, 99);
+
+// Staging init safeguards: disable canonical redirects, ensure staging .htaccess, and activate permalinks
+add_action('init', function() {
+    if (!ppb_is_yamato_staging()) return;
+
+    // Remove WordPress canonical redirects that strip /yamato
+    remove_action('template_redirect', 'redirect_canonical');
+    add_filter('redirect_canonical', '__return_false', 99);
+
+    // Auto-create staging .htaccess in ABSPATH if missing or incomplete
+    if (defined('ABSPATH')) {
+        $htaccess_path = ABSPATH . '.htaccess';
+        $needs_rules = false;
+        if (!file_exists($htaccess_path)) {
+            $needs_rules = true;
+        } else {
+            $content = @file_get_contents($htaccess_path);
+            if ($content === false || strpos($content, 'RewriteBase /yamato/') === false) {
+                $needs_rules = true;
+            }
+        }
+
+        if ($needs_rules && is_writable(ABSPATH)) {
+            $rules = "# BEGIN WordPress Staging /yamato\n" .
+                     "<IfModule mod_rewrite.c>\n" .
+                     "RewriteEngine On\n" .
+                     "RewriteBase /yamato/\n" .
+                     "RewriteRule ^index\\.php$ - [L]\n" .
+                     "RewriteCond %{REQUEST_FILENAME} !-f\n" .
+                     "RewriteCond %{REQUEST_FILENAME} !-d\n" .
+                     "RewriteRule . /yamato/index.php [L]\n" .
+                     "</IfModule>\n" .
+                     "# END WordPress Staging /yamato\n";
+            @file_put_contents($htaccess_path, $rules);
+        }
+    }
+
+    // Auto-activate post-name permalinks if currently plain
+    if (get_option('permalink_structure') === '') {
+        global $wp_rewrite;
+        if ($wp_rewrite) {
+            $wp_rewrite->set_permalink_structure('/%postname%/');
+            $wp_rewrite->flush_rules(false);
+        }
+    }
+}, 1);
+
+// Auto-patch and intercept links in WP-Admin as well
+add_action('admin_footer', function() {
+    if (!ppb_is_yamato_staging()) return;
+    ?>
+    <script>
+    (function() {
+        function fixYamatoUrl(url) {
+            if (!url) return url;
+            if (url.indexOf('#') === 0 || url.indexOf('mailto:') === 0 || url.indexOf('javascript:') === 0) return url;
+            if (url.indexOf('://bk-fip.unm.ac.id') !== -1) {
+                try {
+                    var u = new URL(url);
+                    if (u.pathname.indexOf('/yamato/') !== 0 && u.pathname !== '/yamato') {
+                        u.pathname = '/yamato' + (u.pathname === '/' ? '/' : u.pathname);
+                        return u.toString();
+                    }
+                } catch(e) {}
+            }
+            return url;
+        }
+        function patchAdminLinks() {
+            var links = document.querySelectorAll('a[href]');
+            for (var i = 0; i < links.length; i++) {
+                var raw = links[i].getAttribute('href');
+                var fixed = fixYamatoUrl(raw);
+                if (fixed !== raw) links[i].setAttribute('href', fixed);
+            }
+        }
+        patchAdminLinks();
+        document.addEventListener('click', function(e) {
+            var a = e.target.closest('a');
+            if (!a) return;
+            var href = a.getAttribute('href');
+            var fixed = fixYamatoUrl(href);
+            if (fixed !== href) {
+                e.preventDefault();
+                e.stopPropagation();
+                window.location.href = fixed;
+            }
+        }, true);
+    })();
+    </script>
+    <?php
+});
 
 // Force theme's own header and footer over any lingering Elementor Header Footer Builder templates
 add_filter('enable_hfe_render_header', '__return_false', 99999);
