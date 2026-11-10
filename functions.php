@@ -185,39 +185,54 @@ add_filter('the_content', function($content) {
     return $content;
 }, 99);
 
-// Staging init safeguards: disable canonical redirects, ensure staging .htaccess, and activate permalinks
+// Staging init safeguards: unconditionally block canonical redirects and ensure permalinks & .htaccess
+add_action('template_redirect', function() {
+    if (ppb_is_yamato_staging() || strpos($_SERVER['REQUEST_URI'], '/yamato') !== false) {
+        remove_action('template_redirect', 'redirect_canonical');
+    }
+}, 1);
+
+add_filter('redirect_canonical', function($redirect_url, $requested_url) {
+    if (
+        ppb_is_yamato_staging() ||
+        strpos($_SERVER['REQUEST_URI'], '/yamato') !== false ||
+        (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], 'bk-fip.unm.ac.id') !== false)
+    ) {
+        return false;
+    }
+    return $redirect_url;
+}, 1, 2);
+
 add_action('init', function() {
-    if (!ppb_is_yamato_staging()) return;
+    if (!ppb_is_yamato_staging() && strpos($_SERVER['REQUEST_URI'], '/yamato') === false) return;
 
-    // Remove WordPress canonical redirects that strip /yamato
-    remove_action('template_redirect', 'redirect_canonical');
-    add_filter('redirect_canonical', '__return_false', 99);
-
-    // Auto-create staging .htaccess in ABSPATH if missing or incomplete
+    // Auto-create staging .htaccess in multiple potential paths
+    $potential_paths = array();
     if (defined('ABSPATH')) {
-        $htaccess_path = ABSPATH . '.htaccess';
-        $needs_rules = false;
-        if (!file_exists($htaccess_path)) {
-            $needs_rules = true;
-        } else {
-            $content = @file_get_contents($htaccess_path);
-            if ($content === false || strpos($content, 'RewriteBase /yamato/') === false) {
-                $needs_rules = true;
-            }
-        }
+        $potential_paths[] = rtrim(ABSPATH, '/') . '/.htaccess';
+        $potential_paths[] = rtrim(ABSPATH, '/') . '/yamato/.htaccess';
+    }
+    if (isset($_SERVER['DOCUMENT_ROOT'])) {
+        $potential_paths[] = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/yamato/.htaccess';
+    }
 
-        if ($needs_rules && is_writable(ABSPATH)) {
-            $rules = "# BEGIN WordPress Staging /yamato\n" .
-                     "<IfModule mod_rewrite.c>\n" .
-                     "RewriteEngine On\n" .
-                     "RewriteBase /yamato/\n" .
-                     "RewriteRule ^index\\.php$ - [L]\n" .
-                     "RewriteCond %{REQUEST_FILENAME} !-f\n" .
-                     "RewriteCond %{REQUEST_FILENAME} !-d\n" .
-                     "RewriteRule . /yamato/index.php [L]\n" .
-                     "</IfModule>\n" .
-                     "# END WordPress Staging /yamato\n";
-            @file_put_contents($htaccess_path, $rules);
+    $rules = "# BEGIN WordPress Staging /yamato\n" .
+             "<IfModule mod_rewrite.c>\n" .
+             "RewriteEngine On\n" .
+             "RewriteBase /yamato/\n" .
+             "RewriteRule ^index\\.php$ - [L]\n" .
+             "RewriteCond %{REQUEST_FILENAME} !-f\n" .
+             "RewriteCond %{REQUEST_FILENAME} !-d\n" .
+             "RewriteRule . /yamato/index.php [L]\n" .
+             "</IfModule>\n" .
+             "# END WordPress Staging /yamato\n";
+
+    foreach ($potential_paths as $p) {
+        $dir = dirname($p);
+        if (is_dir($dir) && is_writable($dir)) {
+            if (!file_exists($p) || strpos(@file_get_contents($p), 'RewriteBase /yamato/') === false) {
+                @file_put_contents($p, $rules);
+            }
         }
     }
 
@@ -1138,10 +1153,8 @@ function ppb_auto_sync_pages_content() {
 
 
 
-    if ($synced_version === '13.0' && !$force) {
-
+    if ($synced_version === '14.0' && !$force) {
         return;
-
     }
 
 
@@ -1546,7 +1559,7 @@ function ppb_auto_sync_pages_content() {
         }
     }
 
-    update_option('ppb_content_synced_version', '13.0');
+    update_option('ppb_content_synced_version', '14.0');
 
 
 
@@ -1582,8 +1595,8 @@ add_filter('template_include', function($template) {
             $path = '';
         }
 
-        // Bulletproof Berita Page Routing
-        if (is_page('berita') || $path === 'berita' || (!is_front_page() && is_home())) {
+        // Bulletproof Berita Page Routing - ONLY when path is 'berita' or page template
+        if ($path === 'berita' || is_page('berita') || is_page_template('page-berita.php')) {
             $berita_tpl = get_template_directory() . '/page-berita.php';
             if (file_exists($berita_tpl)) {
                 return $berita_tpl;
@@ -1708,8 +1721,8 @@ add_filter('template_include', function($template) {
             }
         }
 
-        // 3. UNIVERSAL FALLBACK ROUTING FOR ALL PAGES IN pages-data.json
-        if ($wp_query->is_404) {
+        // 3. UNIVERSAL ROUTING FOR ALL PAGES IN pages-data.json
+        if (!empty($path)) {
             $json_file = get_template_directory() . '/pages-data.json';
             if (file_exists($json_file)) {
                 $pages_data = json_decode(file_get_contents($json_file), true);
@@ -1718,8 +1731,8 @@ add_filter('template_include', function($template) {
                     $slug_target = end($parts);
                     foreach ($pages_data as $p) {
                         $full_slug = !empty($p['parent_slug']) ? $p['parent_slug'] . '/' . $p['slug'] : $p['slug'];
-                        if ($p['slug'] === $slug_target || $full_slug === $path) {
-                            global $wpdb, $post;
+                        if ($p['slug'] === $slug_target || $full_slug === $path || $p['slug'] === $path) {
+                            global $wpdb, $post, $wp_query;
                             $post_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE post_name = %s AND post_type = 'page' AND post_status != 'trash' LIMIT 1", $p['slug']));
                             if (!$post_id) {
                                 $now = current_time('mysql');
@@ -1745,6 +1758,9 @@ add_filter('template_include', function($template) {
                                 $wp_query->is_404 = false;
                                 $wp_query->is_page = true;
                                 $wp_query->is_singular = true;
+                                $wp_query->is_home = false;
+                                $wp_query->is_archive = false;
+                                $wp_query->is_post_type_archive = false;
                                 $wp_query->queried_object = $post;
                                 $wp_query->queried_object_id = $post_id;
                                 status_header(200);
