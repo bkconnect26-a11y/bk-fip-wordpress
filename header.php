@@ -638,54 +638,108 @@ if (has_nav_menu('primary-menu')) {
                 }
             }
 
-            // Ensure MIS PNBP & Jurnal BK seamlessly appear in dynamic menu under Akademik
+            // 1. Ensure all rich submenus seamlessly exist in dynamic menu items
             foreach ($custom_nav_tree as &$parentItem) {
-                if (stripos($parentItem['title'], 'Akademik') !== false || strpos($parentItem['url'], 'akademik') !== false) {
-                    $has_pnbp = false;
-                    $has_jurnal = false;
+                $pTitle = !empty($parentItem['title']) ? $parentItem['title'] : '';
+                $pUrl   = !empty($parentItem['url']) ? $parentItem['url'] : '';
+
+                // Under Profil:
+                if (stripos($pTitle, 'Profil') !== false || strpos($pUrl, 'profil') !== false) {
+                    $existing_child_slugs = [];
                     foreach ($parentItem['children'] as $child) {
-                        if (strpos($child['url'], 'mis-pnbp') !== false) $has_pnbp = true;
-                        if (strpos($child['url'], 'jurnal-bk') !== false) $has_jurnal = true;
+                        $existing_child_slugs[] = basename(rtrim($child['url'], '/'));
                     }
-                    if (!$has_pnbp) {
-                        $parentItem['children'][] = [
-                            'id' => 9991,
-                            'title' => 'MIS PNBP (Riset & PkM)',
-                            'url' => home_url('/mis-pnbp/'),
-                            'is_active' => ppb_nav_is_active(home_url('/mis-pnbp/'), $current_path, $is_home),
-                        ];
-                    }
-                    if (!$has_jurnal) {
-                        $parentItem['children'][] = [
-                            'id' => 9992,
-                            'title' => 'Jurnal Ilmiah Prodi BK',
-                            'url' => home_url('/jurnal-bk/'),
-                            'is_active' => ppb_nav_is_active(home_url('/jurnal-bk/'), $current_path, $is_home),
-                        ];
+                    $profil_additions = [
+                        ['slug' => 'visi-keilmuan', 'title' => 'Visi Keilmuan & Bagan Kepakaran', 'url' => home_url('/profil/visi-keilmuan/')],
+                        ['slug' => 'kerjasama-tridharma', 'title' => 'Kerjasama Tridharma (Pendidikan/Riset/PkM)', 'url' => home_url('/profil/kerjasama-tridharma/')],
+                        ['slug' => 'buku-dosen', 'title' => 'Koleksi Buku Dosen BK', 'url' => home_url('/profil/buku-dosen/')],
+                        ['slug' => 'kepakaran-dosen', 'title' => 'Peta Kepakaran, SINTA & HKI', 'url' => home_url('/profil/kepakaran-dosen/')],
+                        ['slug' => 'sarana-prasarana', 'title' => 'Sarana & Prasarana (Ruang Kelas/Lab/Konseling)', 'url' => home_url('/profil/sarana-prasarana/')],
+                    ];
+                    foreach ($profil_additions as $idx => $add) {
+                        if (!in_array($add['slug'], $existing_child_slugs)) {
+                            $parentItem['children'][] = [
+                                'id'        => 9800 + $idx,
+                                'title'     => $add['title'],
+                                'url'       => $add['url'],
+                                'is_active' => ppb_nav_is_active($add['url'], $current_path, $is_home),
+                            ];
+                        }
                     }
                 }
 
-                // Ensure E-Library seamlessly appears in dynamic menu under Layanan
-                if (stripos($parentItem['title'], 'Layanan') !== false || strpos($parentItem['url'], 'layanan') !== false) {
-                    $has_elib = false;
+                // Under Akademik:
+                if (stripos($pTitle, 'Akademik') !== false || strpos($pUrl, 'akademik') !== false) {
+                    $existing_child_slugs = [];
+                    foreach ($parentItem['children'] as $child) {
+                        $existing_child_slugs[] = basename(rtrim($child['url'], '/'));
+                    }
+                    $akademik_additions = [
+                        ['slug' => 'rps-sap', 'title' => 'RPS Lengkap, SAP & Rubrik OBE', 'url' => home_url('/akademik/rps-sap/')],
+                        ['slug' => 'mis-pnbp', 'title' => 'MIS PNBP (Riset & PkM)', 'url' => home_url('/mis-pnbp/')],
+                        ['slug' => 'jurnal-bk', 'title' => 'Jurnal Ilmiah Prodi BK', 'url' => home_url('/jurnal-bk/')],
+                    ];
+                    foreach ($akademik_additions as $idx => $add) {
+                        if (!in_array($add['slug'], $existing_child_slugs)) {
+                            $parentItem['children'][] = [
+                                'id'        => 9820 + $idx,
+                                'title'     => $add['title'],
+                                'url'       => $add['url'],
+                                'is_active' => ppb_nav_is_active($add['url'], $current_path, $is_home),
+                            ];
+                        }
+                    }
+                }
+
+                // Under Kemahasiswaan:
+                if (stripos($pTitle, 'Kemahasiswaan') !== false || strpos($pUrl, 'kemahasiswaan') !== false) {
+                    $existing_child_slugs = [];
+                    foreach ($parentItem['children'] as $child) {
+                        $existing_child_slugs[] = basename(rtrim($child['url'], '/'));
+                    }
+                    $kemahasiswaan_additions = [
+                        ['slug' => 'penerimaan', 'title' => 'Penerimaan Maba (Peminat & Daya Tampung)', 'url' => home_url('/kemahasiswaan/penerimaan/')],
+                        ['slug' => 'mbkm-kemanusiaan', 'title' => 'Pameran Layanan MBKM & Proyek Kemanusiaan', 'url' => home_url('/kemahasiswaan/mbkm-kemanusiaan/')],
+                    ];
+                    foreach ($kemahasiswaan_additions as $idx => $add) {
+                        if (!in_array($add['slug'], $existing_child_slugs)) {
+                            $parentItem['children'][] = [
+                                'id'        => 9840 + $idx,
+                                'title'     => $add['title'],
+                                'url'       => $add['url'],
+                                'is_active' => ppb_nav_is_active($add['url'], $current_path, $is_home),
+                            ];
+                        }
+                    }
+                }
+
+                // Under Layanan:
+                if (stripos($pTitle, 'Layanan') !== false || strpos($pUrl, 'layanan') !== false) {
+                    $existing_child_slugs = [];
                     foreach ($parentItem['children'] as &$child) {
                         if (strpos($child['url'], 'e-library') !== false || strpos($child['url'], 'elibrary') !== false) {
-                            $has_elib = true;
                             if ($is_elib_active) {
                                 $child['is_active'] = true;
                                 $parentItem['is_active'] = true;
                             }
                         }
+                        $existing_child_slugs[] = basename(rtrim($child['url'], '/'));
                     }
                     unset($child);
 
-                    if (!$has_elib) {
-                        $parentItem['children'][] = [
-                            'id' => 9993,
-                            'title' => 'E-Library & Modul',
-                            'url' => home_url('/e-library/'),
-                            'is_active' => $is_elib_active,
-                        ];
+                    $layanan_additions = [
+                        ['slug' => 'persuratan', 'title' => 'Layanan Persuratan & Kode Nomor Surat', 'url' => home_url('/layanan/persuratan/')],
+                        ['slug' => 'e-library', 'title' => 'E-Library & Modul', 'url' => home_url('/e-library/')],
+                    ];
+                    foreach ($layanan_additions as $idx => $add) {
+                        if (!in_array($add['slug'], $existing_child_slugs) && !in_array('elibrary', $existing_child_slugs)) {
+                            $parentItem['children'][] = [
+                                'id'        => 9860 + $idx,
+                                'title'     => $add['title'],
+                                'url'       => $add['url'],
+                                'is_active' => ppb_nav_is_active($add['url'], $current_path, $is_home),
+                            ];
+                        }
                     }
 
                     if ($is_elib_active) {
@@ -694,6 +748,88 @@ if (has_nav_menu('primary-menu')) {
                 }
             }
             unset($parentItem);
+
+            // 2. Ensure top-level items for Laboratorium, Riset & PkM, and Akreditasi exist in dynamic menu
+            $has_top_lab = false;
+            $has_top_riset = false;
+            $has_top_akreditasi = false;
+            $has_top_berita = false;
+
+            foreach ($custom_nav_tree as $item) {
+                $t = !empty($item['title']) ? $item['title'] : '';
+                $u = !empty($item['url']) ? $item['url'] : '';
+                if (stripos($t, 'Laboratorium') !== false || strpos($u, 'laboratorium') !== false) $has_top_lab = true;
+                if (stripos($t, 'Riset') !== false || strpos($u, 'mis-pnbp') !== false) $has_top_riset = true;
+                if (stripos($t, 'Akreditasi') !== false || strpos($u, 'akreditasi') !== false) $has_top_akreditasi = true;
+                if (stripos($t, 'Berita') !== false || strpos($u, 'berita') !== false) $has_top_berita = true;
+            }
+
+            if (!$has_top_lab) {
+                $lab_children = [];
+                foreach ($lab_menu as $idx => $lm) {
+                    $lab_children[] = [
+                        'id'        => 9910 + $idx,
+                        'title'     => $lm['label'],
+                        'url'       => $lm['url'],
+                        'is_active' => ppb_nav_is_active($lm['url'], $current_path, $is_home),
+                    ];
+                }
+                $custom_nav_tree[9910] = [
+                    'id'        => 9910,
+                    'title'     => 'Laboratorium',
+                    'url'       => home_url('/laboratorium/'),
+                    'is_active' => $is_lab,
+                    'children'  => $lab_children,
+                ];
+            }
+
+            if (!$has_top_riset) {
+                $riset_children = [];
+                foreach ($riset_menu as $idx => $rm) {
+                    $riset_children[] = [
+                        'id'        => 9930 + $idx,
+                        'title'     => $rm['label'],
+                        'url'       => $rm['url'],
+                        'is_active' => ppb_nav_is_active($rm['url'], $current_path, $is_home),
+                    ];
+                }
+                $custom_nav_tree[9930] = [
+                    'id'        => 9930,
+                    'title'     => 'Riset & PkM',
+                    'url'       => home_url('/mis-pnbp/'),
+                    'is_active' => $is_riset,
+                    'children'  => $riset_children,
+                ];
+            }
+
+            if (!$has_top_akreditasi) {
+                $akreditasi_children = [];
+                foreach ($akreditasi_menu as $idx => $am) {
+                    $akreditasi_children[] = [
+                        'id'        => 9950 + $idx,
+                        'title'     => $am['label'],
+                        'url'       => $am['url'],
+                        'is_active' => ppb_nav_is_active($am['url'], $current_path, $is_home),
+                    ];
+                }
+                $custom_nav_tree[9950] = [
+                    'id'        => 9950,
+                    'title'     => 'Akreditasi',
+                    'url'       => home_url('/akreditasi/'),
+                    'is_active' => $is_akreditasi,
+                    'children'  => $akreditasi_children,
+                ];
+            }
+
+            if (!$has_top_berita) {
+                $custom_nav_tree[9970] = [
+                    'id'        => 9970,
+                    'title'     => 'Berita',
+                    'url'       => home_url('/berita/'),
+                    'is_active' => $is_berita,
+                    'children'  => [],
+                ];
+            }
         }
     }
 }
