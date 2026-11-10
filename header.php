@@ -498,7 +498,7 @@ if (!function_exists('ppb_nav_is_active')) {
 $is_profil = (!$is_home && (strpos($current_path, 'profil') === 0 || in_array($current_path, array('sejarah', 'visi-misi', 'struktur', 'dosen', 'roadmap', 'dokumen'))));
 $is_akademik = (!$is_home && (strpos($current_path, 'akademik') === 0 || in_array($current_path, array('kurikulum', 'panduan', 'jadwal-ujian', 'statistik', 'mis-pnbp', 'jurnal-bk'))));
 $is_kemahasiswaan = (!$is_home && (strpos($current_path, 'kemahasiswaan') === 0 || in_array($current_path, array('prestasi', 'karya', 'alumni'))));
-$is_layanan = (!$is_home && (strpos($current_path, 'layanan') === 0 || strpos($current_path, 'lab-bk') === 0 || strpos($current_path, 'survei') === 0 || strpos($current_path, 'perlindungan-mahasiswa') !== false || strpos($current_path, 'inventaris') !== false));
+$is_layanan = (!$is_home && (strpos($current_path, 'layanan') === 0 || strpos($current_path, 'lab-bk') === 0 || strpos($current_path, 'survei') === 0 || strpos($current_path, 'perlindungan-mahasiswa') !== false || strpos($current_path, 'inventaris') !== false || strpos($current_path, 'e-library') !== false || strpos($current_path, 'elibrary') !== false));
 $is_berita = (!$is_home && (strpos($current_path, 'berita') === 0 || is_singular('post') || is_category()));
 
 // Dropdown Menu Datasets (Fallback Bawaan)
@@ -532,6 +532,7 @@ $kemahasiswaan_menu = array(
 
 $layanan_menu = array(
     array('url' => home_url('/layanan/'), 'path' => 'layanan', 'label' => 'Ringkasan Layanan'),
+    array('url' => home_url('/e-library/'), 'path' => 'e-library', 'label' => 'E-Library & Modul'),
     array('url' => home_url('/layanan/akademik/'), 'path' => 'layanan/akademik', 'label' => 'Panduan Prosedur & Template'),
     array('url' => home_url('/layanan/perlindungan-mahasiswa/'), 'path' => 'layanan/perlindungan-mahasiswa', 'label' => 'Perlindungan Mahasiswa (No. 13)'),
     array('url' => home_url('/lab-bk/inventaris/'), 'path' => 'lab-bk/inventaris', 'label' => 'Inventaris Laboratorium BK'),
@@ -615,6 +616,22 @@ if (has_nav_menu('primary-menu')) {
                             'title' => 'Jurnal Ilmiah Prodi BK',
                             'url' => home_url('/jurnal-bk/'),
                             'is_active' => ppb_nav_is_active(home_url('/jurnal-bk/'), $current_path, $is_home),
+                        ];
+                    }
+                }
+
+                // Ensure E-Library seamlessly appears in dynamic menu under Layanan
+                if (stripos($parentItem['title'], 'Layanan') !== false || strpos($parentItem['url'], 'layanan') !== false) {
+                    $has_elib = false;
+                    foreach ($parentItem['children'] as $child) {
+                        if (strpos($child['url'], 'e-library') !== false || strpos($child['url'], 'elibrary') !== false) $has_elib = true;
+                    }
+                    if (!$has_elib) {
+                        $parentItem['children'][] = [
+                            'id' => 9993,
+                            'title' => 'E-Library & Modul',
+                            'url' => home_url('/e-library/'),
+                            'is_active' => ppb_nav_is_active(home_url('/e-library/'), $current_path, $is_home),
                         ];
                     }
                 }
