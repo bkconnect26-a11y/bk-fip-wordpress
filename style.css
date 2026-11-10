@@ -1,0 +1,340 @@
+/*
+Theme Name: BK FIP UNM (Scholaro Theme)
+Theme URI: https://bk-fip.unm.ac.id/
+Author: Program Studi Bimbingan dan Konseling FIP UNM
+Description: Tema resmi Program Studi Bimbingan dan Konseling FIP Universitas Negeri Makassar, terintegrasi dengan ekosistem digital BK-Connect & Supabase REST API (Profil Dosen, Publikasi SINTA/Scopus, Hibah Penelitian, & PkM).
+Version: 2.1.2
+Text Domain: bk-fip
+*/
+
+:root {
+  --prodi-dark: #0D3B22;
+  --prodi-main: #185333;
+  --prodi-gold: #F5B82E;
+  --surface-warm: #FAF8F5;
+  --surface-sage: #E8F0EA;
+  --border-sage: #D4E3D8;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--surface-warm);
+  color: #1f2937;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-display,
+.font-serif {
+  font-family: 'Fraunces', Georgia, serif;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.shadow-soft {
+  box-shadow: 0 1px 2px rgba(21, 40, 10, 0.04), 0 8px 24px -12px rgba(21, 40, 10, 0.12);
+}
+
+.shadow-soft-lg {
+  box-shadow: 0 2px 4px rgba(21, 40, 10, 0.05), 0 24px 48px -20px rgba(21, 40, 10, 0.22);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ==========================================================================
+   DROPDOWN MENU STYLING (Immune to Customizer CSS conflicts)
+   ========================================================================== */
+.dropdown-menu {
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+  padding: 6px !important;
+  min-width: 240px !important;
+}
+
+.dropdown-menu a.bk-dropdown-link {
+  display: flex !important;
+  align-items: center !important;
+  padding: 8px 12px !important;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #374151 !important;
+  text-decoration: none !important;
+  line-height: 1.25 !important;
+  position: relative !important;
+  background: transparent !important;
+  transition: all 0.15s ease !important;
+}
+
+.dropdown-menu a.bk-dropdown-link:hover {
+  background-color: #FAF8F5 !important;
+  color: #0D3B22 !important;
+}
+
+.dropdown-menu a.bk-dropdown-link .bk-dropdown-indicator {
+  width: 4px !important;
+  height: 12px !important;
+  border-radius: 2px !important;
+  margin-right: 8px !important;
+  display: inline-block !important;
+  flex-shrink: 0 !important;
+  background: transparent !important;
+}
+
+.dropdown-menu a.bk-dropdown-link.is-active {
+  background-color: #E8F0EA !important;
+  color: #0D3B22 !important;
+  font-weight: 700 !important;
+}
+
+.dropdown-menu a.bk-dropdown-link.is-active .bk-dropdown-indicator {
+  background-color: #0D3B22 !important;
+}
+
+/* Override and kill any rogue pseudo-elements from Customizer Additional CSS */
+.dropdown-menu a::before,
+.dropdown-menu a::after,
+.dropdown-menu a.is-active::before,
+.dropdown-menu a.is-active::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* ==========================================================================
+   HERO BADGES (Plain minimalist text matching local)
+   ========================================================================== */
+.hero-badges span,
+.bk-hero-badge {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: rgba(255, 255, 255, 0.88) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 4px 8px !important;
+}
+
+/* ==========================================================================
+   SUB-NAVIGATION BAR (Sticky Wrap Below Hero)
+   ========================================================================== */
+.bk-subnav-sticky-wrap {
+  position: relative !important;
+  z-index: 30 !important;
+  margin-top: -28px !important;
+  padding: 0 var(--bk-edge-pad, 1rem) !important;
+  margin-bottom: 30px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.bk-subnav-sticky-wrap > div {
+  background: #ffffff !important;
+  border: 1px solid #D4E3D8 !important;
+  border-radius: 18px !important;
+  padding: 6px 8px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+}
+
+/* Prevent any stray <br> or <p> tags from injecting space */
+.bk-subnav-sticky-wrap br,
+.bk-subnav-sticky-wrap p,
+.bk-subnav-item br,
+.bk-subnav-list br,
+.bk-page-wrapper a br,
+.bk-page-wrapper button br {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.bk-subnav-sticky-wrap ul,
+.bk-subnav-list {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  white-space: nowrap !important;
+}
+
+.bk-subnav-sticky-wrap li,
+.bk-subnav-list li {
+  margin: 0 !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+}
+
+.bk-subnav-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 7px 14px !important;
+  border-radius: 12px !important;
+  font-size: 12.5px !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-weight: 500 !important;
+  color: #4B5563 !important;
+  background: transparent !important;
+  text-decoration: none !important;
+  line-height: 1.2 !important;
+  vertical-align: middle !important;
+  transition: all 0.15s ease !important;
+}
+
+.bk-subnav-item:hover {
+  color: #0D3B22 !important;
+  background: rgba(13, 59, 34, 0.05) !important;
+}
+
+.bk-subnav-item.bk-active {
+  background: #0D3B22 !important;
+  color: #F5B82E !important;
+  font-weight: 700 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(13, 59, 34, 0.2) !important;
+}
+
+/* Fix Button line-height and alignment across prodi pages */
+.bk-page-wrapper a,
+.bk-page-wrapper button {
+  line-height: 1.2 !important;
+}
+
+/* WordPress Admin Bar Compatibility */
+body.admin-bar nav.fixed {
+  top: 32px !important;
+}
+@media screen and (max-width: 782px) {
+  body.admin-bar nav.fixed {
+    top: 46px !important;
+  }
+}
+
+/* ==========================================================================
+   HOMEPAGE ZERO-GAP HERO & NAVBAR
+   Menghilangkan 100% celah/garis putih antara Navbar dan Hero Hijau di Beranda
+   ========================================================================== */
+.home main,
+body.home main,
+body.front-page main {
+  background-color: #0D3B22 !important;
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+.home #hero_section,
+body.home #hero_section {
+  background-color: #0D3B22 !important;
+  margin-top: 0 !important;
+  padding-top: 95px !important;
+}
+
+/* ==========================================================================
+   FULL-WIDTH PRODI & BERITA LAYOUT (1:1 LOCAL WP)
+   ========================================================================== */
+html, body {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+}
+
+main,
+.site-main,
+.content-area,
+#primary,
+#content,
+.bk-page-wrapper {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden;
+  box-sizing: border-box !important;
+}
+
+.bk-page-wrapper > section {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Berita grid card image & typography enhancements */
+.bk-news-grid,
+#bk-berita-grid {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* ==========================================================================
+   DOSEN DIRECTORY & SINGLE DOSEN PROFILE BUTTON / CARD REFINEMENTS
+   Memastikan card simetris & tombol tidak ada space kosong di atas teks
+   ========================================================================== */
+.bk-dosen-card-item {
+  box-sizing: border-box !important;
+}
+
+.bk-dosen-card-item *,
+.dosen-tab-btn *,
+.bk-card-btn * {
+  box-sizing: border-box !important;
+}
+
+.bk-dosen-card-item a,
+.bk-dosen-card-item button,
+.dosen-tab-btn,
+.bk-card-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  box-sizing: border-box !important;
+  text-decoration: none !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
+}
+
+.bk-card-btn span,
+.dosen-tab-btn span {
+  display: inline-block !important;
+  line-height: 1 !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.bk-dosen-card-item p {
+  margin-top: 0 !important;
+}
+
+.bk-dosen-card-item h3 {
+  margin-top: 0 !important;
+}
