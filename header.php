@@ -596,13 +596,15 @@ if (has_nav_menu('primary-menu')) {
             $children_map = [];
 
             foreach ($menu_items as $m) {
-                $is_active_item = ppb_nav_is_active($m->url, $current_path, $is_home);
+                $raw_url = !empty($m->url) ? $m->url : '#';
+                $filtered_url = function_exists('ppb_filter_yamato_url') ? ppb_filter_yamato_url($raw_url) : $raw_url;
+                $is_active_item = ppb_nav_is_active($filtered_url, $current_path, $is_home);
 
                 if (empty($m->menu_item_parent)) {
                     $custom_nav_tree[$m->ID] = [
                         'id'        => $m->ID,
                         'title'     => $m->title,
-                        'url'       => $m->url,
+                        'url'       => $filtered_url,
                         'is_active' => $is_active_item,
                         'children'  => []
                     ];
@@ -610,7 +612,7 @@ if (has_nav_menu('primary-menu')) {
                     $children_map[$m->menu_item_parent][] = [
                         'id'        => $m->ID,
                         'title'     => $m->title,
-                        'url'       => $m->url,
+                        'url'       => $filtered_url,
                         'is_active' => $is_active_item,
                     ];
                 }
@@ -1202,5 +1204,67 @@ if (empty($custom_nav_tree)) {
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
+
+    // 7. Auto-lock all navigation links to /yamato staging environment
+    (function() {
+        var isYamato = (window.location.pathname.indexOf('/yamato') === 0 || window.location.href.indexOf('/yamato') !== -1);
+        if (!isYamato) return;
+
+        function fixYamatoUrl(url) {
+            if (!url) return url;
+            if (url.indexOf('#') === 0 || url.indexOf('mailto:') === 0 || url.indexOf('tel:') === 0 || url.indexOf('javascript:') === 0) return url;
+            if (url.indexOf('//') === 0 && url.indexOf('//bk-fip.unm.ac.id') === -1) return url;
+
+            // Relative path
+            if (url.indexOf('/') === 0) {
+                if (url.indexOf('/yamato/') === 0 || url === '/yamato') return url;
+                return '/yamato' + (url === '/' ? '/' : url);
+            }
+
+            // Absolute URL to bk-fip.unm.ac.id
+            if (url.indexOf('://bk-fip.unm.ac.id') !== -1) {
+                try {
+                    var u = new URL(url);
+                    if (u.pathname.indexOf('/yamato/') !== 0 && u.pathname !== '/yamato') {
+                        u.pathname = '/yamato' + (u.pathname === '/' ? '/' : u.pathname);
+                        return u.toString();
+                    }
+                } catch(e) {}
+            }
+            return url;
+        }
+
+        function patchLinks() {
+            var links = document.querySelectorAll('a[href]');
+            for (var i = 0; i < links.length; i++) {
+                var raw = links[i].getAttribute('href');
+                var fixed = fixYamatoUrl(raw);
+                if (fixed !== raw) {
+                    links[i].setAttribute('href', fixed);
+                }
+            }
+        }
+
+        patchLinks();
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', patchLinks);
+        }
+        window.addEventListener('load', patchLinks);
+
+        // Global capture-phase click interceptor (bulletproof guarantee on any link click)
+        document.addEventListener('click', function(e) {
+            var a = e.target.closest('a');
+            if (!a) return;
+            var href = a.getAttribute('href');
+            if (!href) return;
+            var fixed = fixYamatoUrl(href);
+            if (fixed !== href) {
+                e.preventDefault();
+                e.stopPropagation();
+                a.setAttribute('href', fixed);
+                window.location.href = fixed;
+            }
+        }, true);
+    })();
 })();
 </script>

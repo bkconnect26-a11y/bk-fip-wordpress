@@ -27,20 +27,21 @@ if (!function_exists('ppb_is_yamato_staging')) {
         $req    = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
         $script = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '';
 
-        // Check if explicitly on /yamato path, staging directory, or staging clone
+        // In dev branch, any request to bk-fip.unm.ac.id or with /yamato is WP-Staging
         if (
+            strpos($host, 'bk-fip.unm.ac.id') !== false ||
             strpos($req, '/yamato') !== false ||
             strpos($script, '/yamato') !== false ||
             strpos(__DIR__, 'yamato') !== false ||
             (defined('WPSTG_DEV') && WPSTG_DEV) ||
             defined('WPSTAGING_VERSION') ||
             (defined('WP_ENVIRONMENT_TYPE') && WP_ENVIRONMENT_TYPE === 'staging') ||
-            (strpos($host, 'bk-fip.unm.ac.id') !== false && (strpos($req, '/yamato') === 0 || strpos($script, '/yamato') === 0 || strpos(__FILE__, 'yamato') !== false))
+            strpos(get_option('home', ''), '/yamato') !== false ||
+            strpos(get_option('siteurl', ''), '/yamato') !== false
         ) {
             $is_staging = true;
         } else {
-            // Also if host is bk-fip.unm.ac.id and home_url has yamato
-            $is_staging = (strpos(get_option('home', ''), '/yamato') !== false || strpos(get_option('siteurl', ''), '/yamato') !== false);
+            $is_staging = false;
         }
         return $is_staging;
     }
@@ -70,7 +71,7 @@ if (!function_exists('ppb_filter_yamato_url')) {
             if (strpos($url, '/yamato/') === 0 || $url === '/yamato') {
                 return $url;
             }
-            return '/yamato' . $url;
+            return '/yamato' . ($url === '/' ? '/' : $url);
         }
 
         // Full URL with domain
@@ -101,6 +102,39 @@ add_filter('site_url', function($url, $path = '', $scheme = null, $blog_id = nul
     return ppb_filter_yamato_url($url);
 }, 99, 4);
 
+// Filter custom navigation menus from WP Admin (Appearance > Menus)
+add_filter('wp_get_nav_menu_items', function($items) {
+    if (empty($items) || !is_array($items) || !ppb_is_yamato_staging()) {
+        return $items;
+    }
+    foreach ($items as &$item) {
+        if (!empty($item->url)) {
+            $item->url = ppb_filter_yamato_url($item->url);
+        }
+    }
+    unset($item);
+    return $items;
+}, 99);
+
+add_filter('nav_menu_link_attributes', function($atts, $item = null, $args = null, $depth = 0) {
+    if (ppb_is_yamato_staging() && !empty($atts['href'])) {
+        $atts['href'] = ppb_filter_yamato_url($atts['href']);
+    }
+    return $atts;
+}, 99, 4);
+
+add_filter('page_link', function($url, $post_id = 0, $sample = false) {
+    return ppb_filter_yamato_url($url);
+}, 99, 3);
+
+add_filter('post_link', function($url, $post = null, $leavename = false) {
+    return ppb_filter_yamato_url($url);
+}, 99, 3);
+
+add_filter('post_type_link', function($url, $post = null, $leavename = false, $sample = false) {
+    return ppb_filter_yamato_url($url);
+}, 99, 4);
+
 add_filter('the_content', function($content) {
     if (empty($content) || !ppb_is_yamato_staging()) {
         return $content;
@@ -113,7 +147,7 @@ add_filter('the_content', function($content) {
         if (strpos($href, '//') === 0 || strpos($href, '/yamato/') === 0 || $href === '/yamato') {
             return 'href=' . $quote . $href . $quote;
         }
-        return 'href=' . $quote . '/yamato' . $href . $quote;
+        return 'href=' . $quote . '/yamato' . ($href === '/' ? '/' : $href) . $quote;
     }, $content);
 
     // 2. Rewrite full domain links: href="https://bk-fip.unm.ac.id/path" -> href="https://bk-fip.unm.ac.id/yamato/path"
@@ -124,7 +158,7 @@ add_filter('the_content', function($content) {
         if (strpos($path, '/yamato/') === 0 || $path === '/yamato') {
             return 'href=' . $quote . $domain . $path . $quote;
         }
-        return 'href=' . $quote . $domain . '/yamato' . $path . $quote;
+        return 'href=' . $quote . $domain . '/yamato' . ($path === '/' ? '/' : $path) . $quote;
     }, $content);
 
     return $content;
