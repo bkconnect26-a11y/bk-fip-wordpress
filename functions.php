@@ -806,6 +806,34 @@ add_filter('the_content', function($content) {
 
     if (strpos($content, 'bk-subnav-sticky-wrap') !== false) {
 
+        // Auto-inject E-Library into Layanan subnav sticky wrap if not yet present
+        if (strpos($content, '/layanan/akademik/') !== false && strpos($content, '/e-library/') === false) {
+            $elib_subnav_item = '<li style="flex-shrink:0"><a href="/e-library/" class="bk-subnav-item" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:12px;font-size:12px;font-family:\'Poppins\',sans-serif;text-decoration:none;background:transparent;color:#4B5563;font-weight:500">E-Library &amp; Modul</a></li>';
+            $content = str_replace('<li style="flex-shrink:0"><a href="/layanan/akademik/"', $elib_subnav_item . '<li style="flex-shrink:0"><a href="/layanan/akademik/"', $content);
+        }
+
+        // Auto-inject E-Library card into Layanan catalog cards grid
+        if (strpos($content, 'Katalog Layanan &amp; Fasilitas Mahasiswa') !== false && strpos($content, 'Buka E-Library') === false) {
+            $elib_card = '<!-- Card E-Library -->
+                <div style="background:#ffffff;border:1px solid #E5E7EB;border-radius:24px;padding:28px;display:flex;flex-direction:column;justify-content:space-between">
+                    <div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                            <span style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:14px;background:#E8F0EA;color:#0D3B22;font-size:20px">📚</span>
+                            <span style="font-size:10px;font-weight:700;text-transform:uppercase;background:#E8F0EA;color:#0D3B22;padding:4px 10px;border-radius:9999px">Perpustakaan Digital</span>
+                        </div>
+                        <h3 style="font-family:\'Fraunces\',serif;font-size:19px;font-weight:700;color:#0D3B22;margin:0 0 8px">E-Library &amp; Repositori Modul</h3>
+                        <p style="font-size:13px;color:#4B5563;line-height:1.6;margin:0 0 20px">
+                            Akses modul praktikum konseling, diktat pembelajaran mata kuliah, buku panduan skripsi/PPL, dan repositori artikel karya ilmiah dosen serta mahasiswa.
+                        </p>
+                    </div>
+                    <div>
+                        <a href="/e-library/" style="display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:12px;background:#0D3B22;color:#F5B82E;font-size:12.5px;font-weight:700;text-decoration:none">Buka E-Library &rarr;</a>
+                    </div>
+                </div>';
+            $content = str_replace('<!-- Card 1 -->', $elib_card . "\n                <!-- Card 1 -->", $content);
+            $content = str_replace('6 Portal', '7 Portal', $content);
+        }
+
         $content = preg_replace_callback('/<div class="bk-subnav-sticky-wrap"[^>]*>.*?<\/div>\s*<\/div>/s', function($matches) {
 
             $cleaned = str_replace(array('<br />', '<br>', '<br/>'), '', $matches[0]);
@@ -844,7 +872,7 @@ function ppb_auto_sync_pages_content() {
 
 
 
-    if ($synced_version === '10.0' && !$force) {
+    if ($synced_version === '11.0' && !$force) {
 
         return;
 
@@ -1252,7 +1280,7 @@ function ppb_auto_sync_pages_content() {
         }
     }
 
-    update_option('ppb_content_synced_version', '10.0');
+    update_option('ppb_content_synced_version', '11.0');
 
 
 
