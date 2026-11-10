@@ -235,13 +235,22 @@
         text-decoration: none !important;
         display: inline-flex !important;
         align-items: center !important;
+        white-space: nowrap !important;
         border-radius: 9999px !important;
-        padding: 6px 14px !important;
+        padding: 5px 9px !important;
+        font-size: 12px !important;
         font-weight: 500 !important;
-        color: rgba(255, 255, 255, 0.88) !important;
+        color: rgba(255, 255, 255, 0.9) !important;
         border: 1px solid transparent !important;
         background: transparent !important;
         cursor: pointer !important;
+        flex-shrink: 0 !important;
+    }
+    @media (min-width: 1280px) {
+        .bk-nav-btn {
+            padding: 6px 12px !important;
+            font-size: 13px !important;
+        }
     }
     .bk-nav-btn:hover {
         background: rgba(255, 255, 255, 0.15) !important;
@@ -327,8 +336,8 @@
        BULLETPROOF RESPONSIVE NAVIGATION DISPLAY & HOVER RULES
        ========================================================================= */
 
-    /* 1. Desktop Navigation Bar */
-    @media (max-width: 767px) {
+    /* 1. Responsive Navigation Bar: Switch at 1024px for 9 Menu Items */
+    @media (max-width: 1023px) {
         #bk-desktop-nav,
         .bk-desktop-nav {
             display: none !important;
@@ -357,10 +366,14 @@
         }
     }
 
-    @media (min-width: 768px) {
+    @media (min-width: 1024px) {
         #bk-desktop-nav,
         .bk-desktop-nav {
             display: flex !important;
+            align-items: center !important;
+            flex-wrap: nowrap !important;
+            flex-shrink: 0 !important;
+            gap: 4px !important;
         }
         #mobile-nav-toggle {
             display: none !important;
@@ -373,6 +386,12 @@
         }
         .md\:flex {
             display: flex !important;
+        }
+    }
+    @media (min-width: 1280px) {
+        #bk-desktop-nav,
+        .bk-desktop-nav {
+            gap: 6px !important;
         }
     }
 
@@ -582,260 +601,6 @@ $akreditasi_menu = array(
     array('url' => home_url('/akreditasi/sertifikat/'), 'path' => 'akreditasi/sertifikat', 'label' => 'Sertifikat Akreditasi S1, S2, S3'),
     array('url' => home_url('/akreditasi/upm/'), 'path' => 'akreditasi/upm', 'label' => 'Renstra, Renop & Penjaminan Mutu (UPM)'),
 );
-
-// DUKUNGAN MENU DINAMIS WORDPRESS (Appearance > Menus)
-$has_custom_primary_menu = false;
-$custom_nav_tree = [];
-
-if (has_nav_menu('primary-menu')) {
-    $theme_locations = get_nav_menu_locations();
-    if (!empty($theme_locations['primary-menu'])) {
-        $menu_items = wp_get_nav_menu_items($theme_locations['primary-menu']);
-        if (!empty($menu_items) && is_array($menu_items)) {
-            $has_custom_primary_menu = true;
-            $children_map = [];
-
-            foreach ($menu_items as $m) {
-                $raw_url = !empty($m->url) ? $m->url : '#';
-                $filtered_url = function_exists('ppb_filter_yamato_url') ? ppb_filter_yamato_url($raw_url) : $raw_url;
-                $is_active_item = ppb_nav_is_active($filtered_url, $current_path, $is_home);
-
-                if (empty($m->menu_item_parent)) {
-                    $custom_nav_tree[$m->ID] = [
-                        'id'        => $m->ID,
-                        'title'     => $m->title,
-                        'url'       => $filtered_url,
-                        'is_active' => $is_active_item,
-                        'children'  => []
-                    ];
-                } else {
-                    $children_map[$m->menu_item_parent][] = [
-                        'id'        => $m->ID,
-                        'title'     => $m->title,
-                        'url'       => $filtered_url,
-                        'is_active' => $is_active_item,
-                    ];
-                }
-            }
-
-            // Only mark parent active if NOT on homepage and a child is active
-            if (!$is_home) {
-                foreach ($children_map as $parentId => $cList) {
-                    if (isset($custom_nav_tree[$parentId])) {
-                        $custom_nav_tree[$parentId]['children'] = $cList;
-                        foreach ($cList as $c) {
-                            if (!empty($c['is_active'])) {
-                                $custom_nav_tree[$parentId]['is_active'] = true;
-                            }
-                        }
-                    }
-                }
-            } else {
-                foreach ($children_map as $parentId => $cList) {
-                    if (isset($custom_nav_tree[$parentId])) {
-                        $custom_nav_tree[$parentId]['children'] = $cList;
-                    }
-                }
-            }
-
-            // 1. Ensure all rich submenus seamlessly exist in dynamic menu items
-            foreach ($custom_nav_tree as &$parentItem) {
-                $pTitle = !empty($parentItem['title']) ? $parentItem['title'] : '';
-                $pUrl   = !empty($parentItem['url']) ? $parentItem['url'] : '';
-
-                // Under Profil:
-                if (stripos($pTitle, 'Profil') !== false || strpos($pUrl, 'profil') !== false) {
-                    $existing_child_slugs = [];
-                    foreach ($parentItem['children'] as $child) {
-                        $existing_child_slugs[] = basename(rtrim($child['url'], '/'));
-                    }
-                    $profil_additions = [
-                        ['slug' => 'visi-keilmuan', 'title' => 'Visi Keilmuan & Bagan Kepakaran', 'url' => home_url('/profil/visi-keilmuan/')],
-                        ['slug' => 'kerjasama-tridharma', 'title' => 'Kerjasama Tridharma (Pendidikan/Riset/PkM)', 'url' => home_url('/profil/kerjasama-tridharma/')],
-                        ['slug' => 'buku-dosen', 'title' => 'Koleksi Buku Dosen BK', 'url' => home_url('/profil/buku-dosen/')],
-                        ['slug' => 'kepakaran-dosen', 'title' => 'Peta Kepakaran, SINTA & HKI', 'url' => home_url('/profil/kepakaran-dosen/')],
-                        ['slug' => 'sarana-prasarana', 'title' => 'Sarana & Prasarana (Ruang Kelas/Lab/Konseling)', 'url' => home_url('/profil/sarana-prasarana/')],
-                    ];
-                    foreach ($profil_additions as $idx => $add) {
-                        if (!in_array($add['slug'], $existing_child_slugs)) {
-                            $parentItem['children'][] = [
-                                'id'        => 9800 + $idx,
-                                'title'     => $add['title'],
-                                'url'       => $add['url'],
-                                'is_active' => ppb_nav_is_active($add['url'], $current_path, $is_home),
-                            ];
-                        }
-                    }
-                }
-
-                // Under Akademik:
-                if (stripos($pTitle, 'Akademik') !== false || strpos($pUrl, 'akademik') !== false) {
-                    $existing_child_slugs = [];
-                    foreach ($parentItem['children'] as $child) {
-                        $existing_child_slugs[] = basename(rtrim($child['url'], '/'));
-                    }
-                    $akademik_additions = [
-                        ['slug' => 'rps-sap', 'title' => 'RPS Lengkap, SAP & Rubrik OBE', 'url' => home_url('/akademik/rps-sap/')],
-                        ['slug' => 'mis-pnbp', 'title' => 'MIS PNBP (Riset & PkM)', 'url' => home_url('/mis-pnbp/')],
-                        ['slug' => 'jurnal-bk', 'title' => 'Jurnal Ilmiah Prodi BK', 'url' => home_url('/jurnal-bk/')],
-                    ];
-                    foreach ($akademik_additions as $idx => $add) {
-                        if (!in_array($add['slug'], $existing_child_slugs)) {
-                            $parentItem['children'][] = [
-                                'id'        => 9820 + $idx,
-                                'title'     => $add['title'],
-                                'url'       => $add['url'],
-                                'is_active' => ppb_nav_is_active($add['url'], $current_path, $is_home),
-                            ];
-                        }
-                    }
-                }
-
-                // Under Kemahasiswaan:
-                if (stripos($pTitle, 'Kemahasiswaan') !== false || strpos($pUrl, 'kemahasiswaan') !== false) {
-                    $existing_child_slugs = [];
-                    foreach ($parentItem['children'] as $child) {
-                        $existing_child_slugs[] = basename(rtrim($child['url'], '/'));
-                    }
-                    $kemahasiswaan_additions = [
-                        ['slug' => 'penerimaan', 'title' => 'Penerimaan Maba (Peminat & Daya Tampung)', 'url' => home_url('/kemahasiswaan/penerimaan/')],
-                        ['slug' => 'mbkm-kemanusiaan', 'title' => 'Pameran Layanan MBKM & Proyek Kemanusiaan', 'url' => home_url('/kemahasiswaan/mbkm-kemanusiaan/')],
-                    ];
-                    foreach ($kemahasiswaan_additions as $idx => $add) {
-                        if (!in_array($add['slug'], $existing_child_slugs)) {
-                            $parentItem['children'][] = [
-                                'id'        => 9840 + $idx,
-                                'title'     => $add['title'],
-                                'url'       => $add['url'],
-                                'is_active' => ppb_nav_is_active($add['url'], $current_path, $is_home),
-                            ];
-                        }
-                    }
-                }
-
-                // Under Layanan:
-                if (stripos($pTitle, 'Layanan') !== false || strpos($pUrl, 'layanan') !== false) {
-                    $existing_child_slugs = [];
-                    foreach ($parentItem['children'] as &$child) {
-                        if (strpos($child['url'], 'e-library') !== false || strpos($child['url'], 'elibrary') !== false) {
-                            if ($is_elib_active) {
-                                $child['is_active'] = true;
-                                $parentItem['is_active'] = true;
-                            }
-                        }
-                        $existing_child_slugs[] = basename(rtrim($child['url'], '/'));
-                    }
-                    unset($child);
-
-                    $layanan_additions = [
-                        ['slug' => 'persuratan', 'title' => 'Layanan Persuratan & Kode Nomor Surat', 'url' => home_url('/layanan/persuratan/')],
-                        ['slug' => 'e-library', 'title' => 'E-Library & Modul', 'url' => home_url('/e-library/')],
-                    ];
-                    foreach ($layanan_additions as $idx => $add) {
-                        if (!in_array($add['slug'], $existing_child_slugs) && !in_array('elibrary', $existing_child_slugs)) {
-                            $parentItem['children'][] = [
-                                'id'        => 9860 + $idx,
-                                'title'     => $add['title'],
-                                'url'       => $add['url'],
-                                'is_active' => ppb_nav_is_active($add['url'], $current_path, $is_home),
-                            ];
-                        }
-                    }
-
-                    if ($is_elib_active) {
-                        $parentItem['is_active'] = true;
-                    }
-                }
-            }
-            unset($parentItem);
-
-            // 2. Ensure top-level items for Laboratorium, Riset & PkM, and Akreditasi exist in dynamic menu
-            $has_top_lab = false;
-            $has_top_riset = false;
-            $has_top_akreditasi = false;
-            $has_top_berita = false;
-
-            foreach ($custom_nav_tree as $item) {
-                $t = !empty($item['title']) ? $item['title'] : '';
-                $u = !empty($item['url']) ? $item['url'] : '';
-                if (stripos($t, 'Laboratorium') !== false || strpos($u, 'laboratorium') !== false) $has_top_lab = true;
-                if (stripos($t, 'Riset') !== false || strpos($u, 'mis-pnbp') !== false) $has_top_riset = true;
-                if (stripos($t, 'Akreditasi') !== false || strpos($u, 'akreditasi') !== false) $has_top_akreditasi = true;
-                if (stripos($t, 'Berita') !== false || strpos($u, 'berita') !== false) $has_top_berita = true;
-            }
-
-            if (!$has_top_lab) {
-                $lab_children = [];
-                foreach ($lab_menu as $idx => $lm) {
-                    $lab_children[] = [
-                        'id'        => 9910 + $idx,
-                        'title'     => $lm['label'],
-                        'url'       => $lm['url'],
-                        'is_active' => ppb_nav_is_active($lm['url'], $current_path, $is_home),
-                    ];
-                }
-                $custom_nav_tree[9910] = [
-                    'id'        => 9910,
-                    'title'     => 'Laboratorium',
-                    'url'       => home_url('/laboratorium/'),
-                    'is_active' => $is_lab,
-                    'children'  => $lab_children,
-                ];
-            }
-
-            if (!$has_top_riset) {
-                $riset_children = [];
-                foreach ($riset_menu as $idx => $rm) {
-                    $riset_children[] = [
-                        'id'        => 9930 + $idx,
-                        'title'     => $rm['label'],
-                        'url'       => $rm['url'],
-                        'is_active' => ppb_nav_is_active($rm['url'], $current_path, $is_home),
-                    ];
-                }
-                $custom_nav_tree[9930] = [
-                    'id'        => 9930,
-                    'title'     => 'Riset & PkM',
-                    'url'       => home_url('/mis-pnbp/'),
-                    'is_active' => $is_riset,
-                    'children'  => $riset_children,
-                ];
-            }
-
-            if (!$has_top_akreditasi) {
-                $akreditasi_children = [];
-                foreach ($akreditasi_menu as $idx => $am) {
-                    $akreditasi_children[] = [
-                        'id'        => 9950 + $idx,
-                        'title'     => $am['label'],
-                        'url'       => $am['url'],
-                        'is_active' => ppb_nav_is_active($am['url'], $current_path, $is_home),
-                    ];
-                }
-                $custom_nav_tree[9950] = [
-                    'id'        => 9950,
-                    'title'     => 'Akreditasi',
-                    'url'       => home_url('/akreditasi/'),
-                    'is_active' => $is_akreditasi,
-                    'children'  => $akreditasi_children,
-                ];
-            }
-
-            if (!$has_top_berita) {
-                $custom_nav_tree[9970] = [
-                    'id'        => 9970,
-                    'title'     => 'Berita',
-                    'url'       => home_url('/berita/'),
-                    'is_active' => $is_berita,
-                    'children'  => [],
-                ];
-            }
-        }
-    }
-}
-if (empty($custom_nav_tree)) {
-    $has_custom_primary_menu = false;
-}
 ?>
 
 <!-- FIXED NAVBAR (Original Left/Right Layout: w-full px-4 sm:px-8 lg:px-12) -->
@@ -871,44 +636,12 @@ if (empty($custom_nav_tree)) {
         </a>
 
         <!-- Desktop Navigation -->
-        <div id="bk-desktop-nav" class="bk-desktop-nav items-center gap-1.5 lg:gap-2 text-xs sm:text-sm font-semibold">
+        <div id="bk-desktop-nav" class="bk-desktop-nav items-center gap-1 xl:gap-1.5 text-xs font-semibold">
             
-            <?php if ($has_custom_primary_menu) : ?>
-                <!-- Render Menu Dinamis dari WP Admin (Tampilan > Menu) -->
-                <?php foreach ($custom_nav_tree as $item) : ?>
-                    <?php if (!empty($item['children'])) : ?>
-                        <!-- Dropdown Menu -->
-                        <div class="relative group dropdown-container">
-                            <button type="button" class="bk-nav-btn dropdown-trigger flex items-center gap-1 rounded-full <?php echo $item['is_active'] ? 'is-active-dropdown' : ''; ?>">
-                                <span><?php echo esc_html($item['title']); ?></span>
-                                <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-180" style="<?php echo $item['is_active'] ? 'color:#F5B82E;' : 'color:inherit;'; ?>"></i>
-                            </button>
-                            <div class="dropdown-menu absolute left-0 mt-0 w-64 bg-white rounded-2xl shadow-xl shadow-black/20 p-2 border border-gray-100 z-50 text-gray-800 animate-fadeIn" style="background:#ffffff !important;">
-                                <?php foreach ($item['children'] as $child) : 
-                                    $is_c_active = !empty($child['is_active']);
-                                ?>
-                                    <a href="<?php echo esc_url($child['url']); ?>" class="bk-dropdown-link <?php echo $is_c_active ? 'is-active' : ''; ?>" style="<?php echo $is_c_active ? 'display:flex;align-items:center;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:700;color:#0D3B22 !important;background-color:#E8F0EA !important;text-decoration:none;line-height:1.25;position:relative;' : 'display:flex;align-items:center;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:500;color:#374151 !important;background-color:transparent;text-decoration:none;line-height:1.25;position:relative;'; ?>">
-                                        <span class="bk-dropdown-indicator" style="<?php echo $is_c_active ? 'width:4px;height:12px;border-radius:2px;margin-right:8px;display:inline-block;flex-shrink:0;background-color:#0D3B22 !important;' : 'width:4px;height:12px;border-radius:2px;margin-right:8px;display:inline-block;flex-shrink:0;background-color:transparent;'; ?>"></span>
-                                        <span class="bk-dropdown-label" style="color:inherit;"><?php echo esc_html($child['title']); ?></span>
-                                    </a>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                    <?php else : ?>
-                        <!-- Link Tunggal -->
-                        <a href="<?php echo esc_url($item['url']); ?>" class="bk-nav-btn <?php echo $item['is_active'] ? 'is-active-btn' : ''; ?>">
-                            <?php echo esc_html($item['title']); ?>
-                        </a>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-
-            <?php else : ?>
-                <!-- Fallback ke Menu Bawaan Asli Tema Scholaro -->
-                
-                <!-- Beranda -->
-                <a href="<?php echo esc_url(home_url('/')); ?>" class="bk-nav-btn <?php echo $is_home ? 'is-active-btn' : ''; ?>">
-                    Beranda
-                </a>
+            <!-- Beranda -->
+            <a href="<?php echo esc_url(home_url('/')); ?>" class="bk-nav-btn <?php echo $is_home ? 'is-active-btn' : ''; ?>">
+                Beranda
+            </a>
 
                 <!-- Dropdown: Profil -->
                 <div class="relative group dropdown-container">
@@ -1041,8 +774,6 @@ if (empty($custom_nav_tree)) {
                     Berita
                 </a>
 
-            <?php endif; ?>
-
         </div>
 
         <!-- Mobile Menu Toggle Button (Bulletproof Native SVG & OnClick) -->
@@ -1072,33 +803,8 @@ if (empty($custom_nav_tree)) {
     <div id="mobile-nav-menu" class="bg-[#0D3B22] border-b border-white/10 px-6 py-4 space-y-3 transition-all duration-300 max-h-[85vh] overflow-y-auto">
         <div class="space-y-1">
             
-            <?php if ($has_custom_primary_menu) : ?>
-                <!-- Render Mobile Menu Dinamis dari WP Admin -->
-                <?php foreach ($custom_nav_tree as $item) : ?>
-                    <?php if (!empty($item['children'])) : ?>
-                        <div class="py-2 border-b border-white/10">
-                            <button type="button" onclick="bkToggleAccordion(this)" class="mobile-acc-btn w-full flex items-center justify-between text-sm font-semibold py-2 px-1 rounded-lg <?php echo $item['is_active'] ? 'text-[#F5B82E]' : 'text-white/90 hover:text-[#F5B82E]'; ?>" style="cursor:pointer;background:transparent;border:none;">
-                                <span><?php echo esc_html($item['title']); ?></span>
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;color:#F5B82E;"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                            </button>
-                            <div class="mobile-acc-content pl-4 pt-2 space-y-2 border-l-2 border-white/20 ml-2 mt-2">
-                                <?php foreach ($item['children'] as $child) : ?>
-                                    <a href="<?php echo esc_url($child['url']); ?>" class="block text-sm py-1 <?php echo !empty($child['is_active']) ? 'text-[#F5B82E] font-bold' : 'text-white/70 hover:text-[#F5B82E]'; ?>" style="<?php echo !empty($child['is_active']) ? 'color:#F5B82E !important; font-weight:700;' : 'color:rgba(255,255,255,0.8) !important;'; ?>">
-                                        <?php echo esc_html($child['title']); ?>
-                                    </a>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                    <?php else : ?>
-                        <a href="<?php echo esc_url($item['url']); ?>" class="block text-sm font-bold py-2 <?php echo $item['is_active'] ? 'text-[#F5B82E]' : 'text-white/90 hover:text-[#F5B82E]'; ?>" style="<?php echo $item['is_active'] ? 'color:#F5B82E !important;' : 'color:rgba(255,255,255,0.9) !important;'; ?>">
-                            <?php echo esc_html($item['title']); ?>
-                        </a>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-
-            <?php else : ?>
-                <!-- Fallback Mobile Menu Bawaan -->
-                <a href="<?php echo esc_url(home_url('/')); ?>" class="block text-sm font-bold py-2 <?php echo $is_home ? 'text-[#F5B82E]' : 'text-white/90 hover:text-[#F5B82E]'; ?>" style="<?php echo $is_home ? 'color:#F5B82E !important;' : 'color:rgba(255,255,255,0.9) !important;'; ?>">Beranda</a>
+            <!-- Beranda -->
+            <a href="<?php echo esc_url(home_url('/')); ?>" class="block text-sm font-bold py-2 <?php echo $is_home ? 'text-[#F5B82E]' : 'text-white/90 hover:text-[#F5B82E]'; ?>" style="<?php echo $is_home ? 'color:#F5B82E !important;' : 'color:rgba(255,255,255,0.9) !important;'; ?>">Beranda</a>
                 
                 <!-- Mobile Accordion: Profil -->
                 <div class="py-2 border-b border-white/10">
@@ -1221,8 +927,6 @@ if (empty($custom_nav_tree)) {
 
                 <a href="<?php echo esc_url(home_url('/berita/')); ?>" class="block text-sm font-semibold py-2 <?php echo $is_berita ? 'text-[#F5B82E]' : 'text-white/90 hover:text-[#F5B82E]'; ?>" style="<?php echo $is_berita ? 'color:#F5B82E !important;' : 'color:rgba(255,255,255,0.9) !important;'; ?>">Berita &amp; Pengumuman</a>
 
-            <?php endif; ?>
-
         </div>
     </div>
 </nav>
@@ -1318,9 +1022,9 @@ if (empty($custom_nav_tree)) {
         document.addEventListener("DOMContentLoaded", bindMobileNav);
     }
 
-    // 4. Close mobile menu on desktop resize
+    // 4. Close mobile menu on desktop resize (>= 1024px)
     window.addEventListener("resize", function() {
-        if (window.innerWidth >= 768) {
+        if (window.innerWidth >= 1024) {
             window.bkToggleMobileNav(false);
         }
     });

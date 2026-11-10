@@ -102,6 +102,101 @@
     </div>
 </footer>
 
+<!-- FLOATING BACK TO TOP BUTTON (UNIVERSAL ON ALL PAGES) -->
+<button 
+    type="button" 
+    id="bk-back-to-top" 
+    class="bk-back-to-top" 
+    aria-label="Kembali ke atas" 
+    title="Kembali ke atas"
+    onclick="window.scrollTo({top: 0, behavior: 'smooth'});"
+>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 15l-6-6-6 6"/>
+    </svg>
+</button>
+
+<style>
+/* Floating Back to Top Button Styling */
+.bk-back-to-top {
+    position: fixed !important;
+    bottom: 28px !important;
+    right: 28px !important;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 50% !important;
+    background: #0D3B22 !important;
+    color: #F5B82E !important;
+    border: 1.5px solid rgba(245, 184, 46, 0.45) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.12) !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 99990 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateY(16px) scale(0.9) !important;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+.bk-back-to-top.is-visible {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: translateY(0) scale(1) !important;
+}
+
+.bk-back-to-top:hover {
+    background: #F5B82E !important;
+    color: #0D3B22 !important;
+    border-color: #F5B82E !important;
+    box-shadow: 0 8px 24px rgba(245, 184, 46, 0.45), 0 3px 8px rgba(0, 0, 0, 0.2) !important;
+    transform: translateY(-3px) scale(1.05) !important;
+}
+
+.bk-back-to-top:active {
+    transform: translateY(-1px) scale(0.98) !important;
+}
+
+@media (max-width: 640px) {
+    .bk-back-to-top {
+        bottom: 20px !important;
+        right: 20px !important;
+        width: 40px !important;
+        height: 40px !important;
+    }
+}
+</style>
+
+<script>
+(function() {
+    var btn = document.getElementById('bk-back-to-top');
+    if (!btn) return;
+
+    var ticking = false;
+    function toggleBackToTop() {
+        var scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+        if (scrollY > 300) {
+            btn.classList.add('is-visible');
+        } else {
+            btn.classList.remove('is-visible');
+        }
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', function() {
+        if (!ticking) {
+            window.requestAnimationFrame(toggleBackToTop);
+            ticking = true;
+        }
+    }, { passive: true });
+
+    toggleBackToTop();
+})();
+</script>
+
 <?php wp_footer(); ?>
 </body>
 </html>
